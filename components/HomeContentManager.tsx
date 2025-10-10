@@ -36,7 +36,6 @@ export default function HomeContentManager() {
   };
 
   const updateContent = async (section: string, field: string, value: string) => {
-    setSaving(true);
     try {
       const response = await fetch('/api/home-content', {
         method: 'POST',
@@ -47,14 +46,38 @@ export default function HomeContentManager() {
       });
 
       const data = await response.json();
-      if (data.success) {
-        setMessage('Content updated successfully!');
-        setTimeout(() => setMessage(''), 3000);
-        fetchContent();
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to update content');
       }
+      return data;
     } catch (error) {
       console.error('Error updating content:', error);
-      setMessage('Error updating content');
+      throw error;
+    }
+  };
+
+  const saveAllContent = async () => {
+    setSaving(true);
+    try {
+      // Save all hero section content
+      const savePromises = heroFields.map(field => {
+        const value = getContentValue('hero', field.key);
+        if (value) {
+          return updateContent('hero', field.key, value);
+        }
+        return Promise.resolve();
+      });
+      
+      await Promise.all(savePromises);
+      
+      // Refresh content after all saves are complete
+      await fetchContent();
+      
+      setMessage('All content saved successfully!');
+      setTimeout(() => setMessage(''), 3000);
+    } catch (error) {
+      console.error('Error saving content:', error);
+      setMessage('Error saving content');
       setTimeout(() => setMessage(''), 3000);
     } finally {
       setSaving(false);
@@ -111,14 +134,33 @@ export default function HomeContentManager() {
       )}
 
       <div className="card-elevated">
-        <div className="flex items-center space-x-3 mb-6">
-          <div className="h-10 w-10 bg-gradient-to-br from-amber-500 to-amber-700 rounded-xl flex items-center justify-center">
-            <Home className="h-5 w-5 text-white" />
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center space-x-3">
+            <div className="h-10 w-10 bg-gradient-to-br from-amber-500 to-amber-700 rounded-xl flex items-center justify-center">
+              <Home className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-gray-900">Hero Section</h3>
+              <p className="text-sm text-gray-600">Configure your main landing area</p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-xl font-bold text-gray-900">Hero Section</h3>
-            <p className="text-sm text-gray-600">Configure your main landing area</p>
-          </div>
+          <button
+            onClick={saveAllContent}
+            disabled={saving}
+            className="btn-primary flex items-center space-x-2 disabled:opacity-50"
+          >
+            {saving ? (
+              <>
+                <div className="spinner" />
+                <span>Saving...</span>
+              </>
+            ) : (
+              <>
+                <Save className="h-5 w-5" />
+                <span>Save All</span>
+              </>
+            )}
+          </button>
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -137,7 +179,6 @@ export default function HomeContentManager() {
                   );
                   setContent(newContent);
                 }}
-                onBlur={() => updateContent('hero', field.key, getContentValue('hero', field.key))}
                 placeholder={field.placeholder}
                 className="input-field min-h-[120px] resize-none"
                 rows={4}

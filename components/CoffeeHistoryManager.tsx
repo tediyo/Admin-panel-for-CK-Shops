@@ -211,13 +211,18 @@ export default function CoffeeHistoryManager() {
 
       {/* Add/Edit Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">
-                {editingItem ? 'Edit History Item' : 'Add New History Item'}
-              </h3>
-              <button onClick={closeForm} className="text-gray-400 hover:text-gray-600">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-lg mx-4 animate-slide-up">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-3">
+                <div className="h-10 w-10 bg-gradient-to-br from-amber-500 to-amber-700 rounded-xl flex items-center justify-center">
+                  <History className="h-5 w-5 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900">
+                  {editingItem ? 'Edit History Item' : 'Add New History Item'}
+                </h3>
+              </div>
+              <button onClick={closeForm} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -258,36 +263,39 @@ function HistoryForm({ item, onSave, onCancel, saving }: HistoryFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Year *
-        </label>
-        <input
-          type="text"
-          value={formData.year}
-          onChange={(e) => setFormData({ ...formData, year: e.target.value })}
-          className="input-field"
-          placeholder="e.g., 1500s, 1600s, 1900s"
-          required
-        />
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-3">
+            Year *
+          </label>
+          <input
+            type="text"
+            value={formData.year}
+            onChange={(e) => setFormData({ ...formData, year: e.target.value })}
+            className="input-field"
+            placeholder="e.g., 1500s, 1600s, 1900s"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-3">
+            Title *
+          </label>
+          <input
+            type="text"
+            value={formData.title}
+            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            className="input-field"
+            placeholder="Enter historical event title"
+            required
+          />
+        </div>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Title *
-        </label>
-        <input
-          type="text"
-          value={formData.title}
-          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-          className="input-field"
-          required
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-semibold text-gray-700 mb-3">
           Description *
         </label>
         <textarea
@@ -295,12 +303,13 @@ function HistoryForm({ item, onSave, onCancel, saving }: HistoryFormProps) {
           onChange={(e) => setFormData({ ...formData, description: e.target.value })}
           className="input-field"
           rows={4}
+          placeholder="Describe this historical coffee event..."
           required
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-semibold text-gray-700 mb-3">
           Image URL
         </label>
         <input
@@ -308,22 +317,23 @@ function HistoryForm({ item, onSave, onCancel, saving }: HistoryFormProps) {
           value={formData.image_url}
           onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
           className="input-field"
+          placeholder="https://example.com/historical-image.jpg"
         />
       </div>
 
-      <div>
-        <label className="flex items-center">
+      <div className="flex items-center justify-center">
+        <label className="flex items-center space-x-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer">
           <input
             type="checkbox"
             checked={formData.is_active}
             onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-            className="mr-2"
+            className="w-5 h-5 text-amber-600 rounded focus:ring-amber-500"
           />
-          <span className="text-sm text-gray-700">Active</span>
+          <span className="text-sm font-semibold text-gray-700">Active</span>
         </label>
       </div>
 
-      <div className="flex space-x-2 pt-4">
+      <div className="flex space-x-3 pt-6">
         <button
           type="submit"
           disabled={saving}
@@ -331,13 +341,13 @@ function HistoryForm({ item, onSave, onCancel, saving }: HistoryFormProps) {
         >
           {saving ? (
             <>
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <div className="spinner" />
               <span>Saving...</span>
             </>
           ) : (
             <>
-              <Save className="h-4 w-4" />
-              <span>Save</span>
+              <Save className="h-5 w-5" />
+              <span>Save Item</span>
             </>
           )}
         </button>

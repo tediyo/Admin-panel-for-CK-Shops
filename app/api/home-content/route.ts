@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
         updated_at = CURRENT_TIMESTAMP
     `);
 
-    stmt.run(section, field, value, is_active !== false);
+    stmt.run(section, field, value, is_active !== false ? 1 : 0);
 
     return NextResponse.json({ success: true, message: 'Home content updated successfully' });
   } catch (error) {
