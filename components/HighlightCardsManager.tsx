@@ -113,86 +113,95 @@ export default function HighlightCardsManager() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 animate-fade-in">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Highlight Cards Management</h2>
-        <div className="flex space-x-2">
+        <div>
+          <h2 className="text-3xl font-bold coffee-text-gradient">Highlight Cards Management</h2>
+          <p className="text-gray-600 mt-1">Create and manage featured product cards</p>
+        </div>
+        <div className="flex space-x-3">
           <button
             onClick={fetchCards}
             className="btn-secondary flex items-center space-x-2"
           >
-            <RefreshCw className="h-4 w-4" />
+            <RefreshCw className="h-5 w-5" />
             <span>Refresh</span>
           </button>
           <button
             onClick={() => setShowForm(true)}
             className="btn-primary flex items-center space-x-2"
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="h-5 w-5" />
             <span>Add Card</span>
           </button>
         </div>
       </div>
 
       {message && (
-        <div className={`p-4 rounded-lg ${
+        <div className={`p-4 rounded-xl flex items-center space-x-3 ${
           message.includes('Error') 
             ? 'bg-red-50 text-red-700 border border-red-200' 
-            : 'bg-green-50 text-green-700 border border-green-200'
+            : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
         }`}>
-          {message}
+          <div className={`w-2 h-2 rounded-full ${message.includes('Error') ? 'bg-red-500' : 'bg-emerald-500'}`}></div>
+          <span className="font-semibold">{message}</span>
         </div>
       )}
 
       {/* Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {cards.map((card) => (
-          <div key={card.id} className="card">
-            <div className="aspect-w-16 aspect-h-9 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {cards.map((card, index) => (
+          <div key={card.id} className="card group hover:scale-105 transition-all duration-300 animate-slide-up" style={{ animationDelay: `${index * 100}ms` }}>
+            <div className="relative mb-6 overflow-hidden rounded-xl">
               {card.image_url ? (
                 <img
                   src={card.image_url}
                   alt={card.title}
-                  className="w-full h-48 object-cover rounded-lg"
+                  className="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-300"
                 />
               ) : (
-                <div className="w-full h-48 bg-gray-200 rounded-lg flex items-center justify-center">
-                  <span className="text-gray-500">No image</span>
+                <div className="w-full h-56 bg-gradient-to-br from-gray-200 to-gray-300 rounded-xl flex items-center justify-center">
+                  <div className="text-center">
+                    <Star className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+                    <span className="text-gray-500 font-medium">No image</span>
+                  </div>
                 </div>
               )}
+              
+              {/* Badges */}
+              <div className="absolute top-4 right-4 flex flex-col space-y-2">
+                {card.is_popular && (
+                  <span className="bg-red-500 text-white text-xs px-3 py-1 rounded-full font-semibold shadow-lg">
+                    Popular
+                  </span>
+                )}
+                {card.is_seasonal && (
+                  <span className="bg-emerald-500 text-white text-xs px-3 py-1 rounded-full font-semibold shadow-lg">
+                    Seasonal
+                  </span>
+                )}
+              </div>
             </div>
             
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">{card.title}</h3>
-                <div className="flex space-x-1">
-                  {card.is_popular && (
-                    <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
-                      Popular
-                    </span>
-                  )}
-                  {card.is_seasonal && (
-                    <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
-                      Seasonal
-                    </span>
-                  )}
-                </div>
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">{card.title}</h3>
+                <p className="text-gray-600 text-sm leading-relaxed">{card.description}</p>
               </div>
               
-              <p className="text-gray-600 text-sm">{card.description}</p>
-              
-              {card.price && (
-                <p className="text-lg font-bold text-primary-600">{card.price}</p>
-              )}
-              
-              {card.badge && (
-                <span className="inline-block bg-primary-100 text-primary-800 text-xs px-2 py-1 rounded-full">
-                  {card.badge}
-                </span>
-              )}
+              <div className="flex items-center justify-between">
+                {card.price && (
+                  <p className="text-2xl font-bold coffee-text-gradient">{card.price}</p>
+                )}
+                {card.badge && (
+                  <span className="bg-amber-100 text-amber-800 text-sm px-3 py-1 rounded-full font-semibold">
+                    {card.badge}
+                  </span>
+                )}
+              </div>
             </div>
             
-            <div className="mt-4 flex space-x-2">
+            <div className="mt-6 flex space-x-3">
               <button
                 onClick={() => openEditForm(card)}
                 className="flex-1 btn-secondary flex items-center justify-center space-x-2"
@@ -213,13 +222,18 @@ export default function HighlightCardsManager() {
 
       {/* Add/Edit Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">
-                {editingCard ? 'Edit Card' : 'Add New Card'}
-              </h3>
-              <button onClick={closeForm} className="text-gray-400 hover:text-gray-600">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-2xl mx-4 animate-slide-up">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-3">
+                <div className="h-10 w-10 bg-gradient-to-br from-amber-500 to-amber-700 rounded-xl flex items-center justify-center">
+                  <Star className="h-5 w-5 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900">
+                  {editingCard ? 'Edit Card' : 'Add New Card'}
+                </h3>
+              </div>
+              <button onClick={closeForm} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -263,48 +277,24 @@ function CardForm({ card, onSave, onCancel, saving }: CardFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Title *
-        </label>
-        <input
-          type="text"
-          value={formData.title}
-          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-          className="input-field"
-          required
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Description *
-        </label>
-        <textarea
-          value={formData.description}
-          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-          className="input-field"
-          rows={3}
-          required
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Image URL
-        </label>
-        <input
-          type="url"
-          value={formData.image_url}
-          onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-          className="input-field"
-        />
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-semibold text-gray-700 mb-3">
+            Title *
+          </label>
+          <input
+            type="text"
+            value={formData.title}
+            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            className="input-field"
+            placeholder="Enter card title"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-3">
             Price
           </label>
           <input
@@ -315,54 +305,81 @@ function CardForm({ card, onSave, onCancel, saving }: CardFormProps) {
             placeholder="$X.XX"
           />
         </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Badge
-          </label>
-          <input
-            type="text"
-            value={formData.badge}
-            onChange={(e) => setFormData({ ...formData, badge: e.target.value })}
-            className="input-field"
-            placeholder="New, Limited, etc."
-          />
-        </div>
       </div>
 
-      <div className="space-y-2">
-        <label className="flex items-center">
+      <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-3">
+          Description *
+        </label>
+        <textarea
+          value={formData.description}
+          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+          className="input-field"
+          rows={3}
+          placeholder="Describe your product or offer"
+          required
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-3">
+          Image URL
+        </label>
+        <input
+          type="url"
+          value={formData.image_url}
+          onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+          className="input-field"
+          placeholder="https://example.com/image.jpg"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-3">
+          Badge
+        </label>
+        <input
+          type="text"
+          value={formData.badge}
+          onChange={(e) => setFormData({ ...formData, badge: e.target.value })}
+          className="input-field"
+          placeholder="New, Limited, Special, etc."
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <label className="flex items-center space-x-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer">
           <input
             type="checkbox"
             checked={formData.is_popular}
             onChange={(e) => setFormData({ ...formData, is_popular: e.target.checked })}
-            className="mr-2"
+            className="w-5 h-5 text-red-600 rounded focus:ring-red-500"
           />
-          <span className="text-sm text-gray-700">Popular</span>
+          <span className="text-sm font-semibold text-gray-700">Popular</span>
         </label>
 
-        <label className="flex items-center">
+        <label className="flex items-center space-x-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer">
           <input
             type="checkbox"
             checked={formData.is_seasonal}
             onChange={(e) => setFormData({ ...formData, is_seasonal: e.target.checked })}
-            className="mr-2"
+            className="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500"
           />
-          <span className="text-sm text-gray-700">Seasonal</span>
+          <span className="text-sm font-semibold text-gray-700">Seasonal</span>
         </label>
 
-        <label className="flex items-center">
+        <label className="flex items-center space-x-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer">
           <input
             type="checkbox"
             checked={formData.is_active}
             onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-            className="mr-2"
+            className="w-5 h-5 text-amber-600 rounded focus:ring-amber-500"
           />
-          <span className="text-sm text-gray-700">Active</span>
+          <span className="text-sm font-semibold text-gray-700">Active</span>
         </label>
       </div>
 
-      <div className="flex space-x-2 pt-4">
+      <div className="flex space-x-3 pt-6">
         <button
           type="submit"
           disabled={saving}
@@ -370,13 +387,13 @@ function CardForm({ card, onSave, onCancel, saving }: CardFormProps) {
         >
           {saving ? (
             <>
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <div className="spinner" />
               <span>Saving...</span>
             </>
           ) : (
             <>
-              <Save className="h-4 w-4" />
-              <span>Save</span>
+              <Save className="h-5 w-5" />
+              <span>Save Card</span>
             </>
           )}
         </button>

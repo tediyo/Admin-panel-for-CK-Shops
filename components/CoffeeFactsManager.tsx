@@ -107,68 +107,79 @@ export default function CoffeeFactsManager() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 animate-fade-in">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Coffee Facts Management</h2>
-        <div className="flex space-x-2">
+        <div>
+          <h2 className="text-3xl font-bold coffee-text-gradient">Coffee Facts Management</h2>
+          <p className="text-gray-600 mt-1">Share interesting coffee knowledge with your customers</p>
+        </div>
+        <div className="flex space-x-3">
           <button
             onClick={fetchFacts}
             className="btn-secondary flex items-center space-x-2"
           >
-            <RefreshCw className="h-4 w-4" />
+            <RefreshCw className="h-5 w-5" />
             <span>Refresh</span>
           </button>
           <button
             onClick={() => setShowForm(true)}
             className="btn-primary flex items-center space-x-2"
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="h-5 w-5" />
             <span>Add Fact</span>
           </button>
         </div>
       </div>
 
       {message && (
-        <div className={`p-4 rounded-lg ${
+        <div className={`p-4 rounded-xl flex items-center space-x-3 ${
           message.includes('Error') 
             ? 'bg-red-50 text-red-700 border border-red-200' 
-            : 'bg-green-50 text-green-700 border border-green-200'
+            : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
         }`}>
-          {message}
+          <div className={`w-2 h-2 rounded-full ${message.includes('Error') ? 'bg-red-500' : 'bg-emerald-500'}`}></div>
+          <span className="font-semibold">{message}</span>
         </div>
       )}
 
       {/* Facts Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {facts.map((fact) => (
-          <div key={fact.id} className="card">
-            <div className="flex items-start justify-between">
-              <p className="text-gray-700 flex-1">{fact.fact}</p>
-              <div className="flex space-x-2 ml-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {facts.map((fact, index) => (
+          <div key={fact.id} className="card group hover:scale-105 transition-all duration-300 animate-slide-up" style={{ animationDelay: `${index * 100}ms` }}>
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex-1">
+                <div className="h-12 w-12 bg-gradient-to-br from-amber-500 to-amber-700 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <Lightbulb className="h-6 w-6 text-white" />
+                </div>
+                <p className="text-gray-700 text-sm leading-relaxed">{fact.fact}</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+              <div className="flex items-center space-x-2">
+                <span className={`badge ${
+                  fact.is_active ? 'badge-success' : 'badge-error'
+                }`}>
+                  {fact.is_active ? 'Active' : 'Inactive'}
+                </span>
+                <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                  #{fact.sort_order}
+                </span>
+              </div>
+              <div className="flex space-x-1">
                 <button
                   onClick={() => openEditForm(fact)}
-                  className="p-2 text-gray-400 hover:text-primary-600"
+                  className="p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all duration-200"
                 >
                   <Edit className="h-4 w-4" />
                 </button>
                 <button
                   onClick={() => handleDelete(fact.id)}
-                  className="p-2 text-gray-400 hover:text-red-600"
+                  className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>
               </div>
-            </div>
-            
-            <div className="mt-3 flex items-center justify-between">
-              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                fact.is_active
-                  ? 'bg-green-100 text-green-800'
-                  : 'bg-gray-100 text-gray-800'
-              }`}>
-                {fact.is_active ? 'Active' : 'Inactive'}
-              </span>
-              <span className="text-xs text-gray-500">Order: {fact.sort_order}</span>
             </div>
           </div>
         ))}
@@ -176,13 +187,18 @@ export default function CoffeeFactsManager() {
 
       {/* Add/Edit Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">
-                {editingFact ? 'Edit Fact' : 'Add New Fact'}
-              </h3>
-              <button onClick={closeForm} className="text-gray-400 hover:text-gray-600">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-lg mx-4 animate-slide-up">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-3">
+                <div className="h-10 w-10 bg-gradient-to-br from-amber-500 to-amber-700 rounded-xl flex items-center justify-center">
+                  <Lightbulb className="h-5 w-5 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900">
+                  {editingFact ? 'Edit Fact' : 'Add New Fact'}
+                </h3>
+              </div>
+              <button onClick={closeForm} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -220,24 +236,24 @@ function FactForm({ fact, onSave, onCancel, saving }: FactFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Fact *
+        <label className="block text-sm font-semibold text-gray-700 mb-3">
+          Coffee Fact *
         </label>
         <textarea
           value={formData.fact}
           onChange={(e) => setFormData({ ...formData, fact: e.target.value })}
           className="input-field"
           rows={4}
-          placeholder="Enter an interesting coffee fact..."
+          placeholder="Enter an interesting coffee fact that will amaze your customers..."
           required
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-semibold text-gray-700 mb-3">
             Sort Order
           </label>
           <input
@@ -246,23 +262,24 @@ function FactForm({ fact, onSave, onCancel, saving }: FactFormProps) {
             onChange={(e) => setFormData({ ...formData, sort_order: parseInt(e.target.value) || 0 })}
             className="input-field"
             min="0"
+            placeholder="0"
           />
         </div>
 
         <div className="flex items-center justify-center">
-          <label className="flex items-center">
+          <label className="flex items-center space-x-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer">
             <input
               type="checkbox"
               checked={formData.is_active}
               onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-              className="mr-2"
+              className="w-5 h-5 text-amber-600 rounded focus:ring-amber-500"
             />
-            <span className="text-sm text-gray-700">Active</span>
+            <span className="text-sm font-semibold text-gray-700">Active</span>
           </label>
         </div>
       </div>
 
-      <div className="flex space-x-2 pt-4">
+      <div className="flex space-x-3 pt-6">
         <button
           type="submit"
           disabled={saving}
@@ -270,13 +287,13 @@ function FactForm({ fact, onSave, onCancel, saving }: FactFormProps) {
         >
           {saving ? (
             <>
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <div className="spinner" />
               <span>Saving...</span>
             </>
           ) : (
             <>
-              <Save className="h-4 w-4" />
-              <span>Save</span>
+              <Save className="h-5 w-5" />
+              <span>Save Fact</span>
             </>
           )}
         </button>
