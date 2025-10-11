@@ -1,7 +1,7 @@
 // Database setup script
 // Run this after setting up your MongoDB Atlas connection
 
-const { initializeDatabase } = require('../lib/init-db');
+const { initializeDatabase } = require('../lib/init-db.js');
 
 async function setup() {
   try {
