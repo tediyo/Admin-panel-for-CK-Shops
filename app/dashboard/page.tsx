@@ -12,7 +12,9 @@ import {
   Lightbulb,
   LogOut,
   Menu,
-  X
+  X,
+  ChevronDown,
+  ChevronRight
 } from 'lucide-react';
 import HomeContentManager from '@/components/HomeContentManager';
 import DisplaySettingsManager from '@/components/DisplaySettingsManager';
@@ -60,12 +62,31 @@ export default function Dashboard() {
     router.push('/');
   };
 
-  const tabs = [
-    { id: 'home-content', name: 'Home Content', icon: Home },
-    { id: 'display-settings', name: 'Display Settings', icon: Settings },
-    { id: 'highlight-cards', name: 'Highlight Cards', icon: Star },
-    { id: 'coffee-history', name: 'Coffee History', icon: History },
-    { id: 'coffee-facts', name: 'Coffee Facts', icon: Lightbulb },
+  const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set(['home']));
+
+  const mainMenus = [
+    {
+      id: 'home',
+      name: 'Home Content',
+      icon: Home,
+      subMenus: [
+        { id: 'home-content', name: 'Home Content', icon: Home },
+        { id: 'coffee-facts', name: 'Coffee Facts', icon: Lightbulb },
+        { id: 'coffee-history', name: 'Coffee History', icon: History },
+        { id: 'highlight-cards', name: 'Highlight Cards', icon: Star },
+        { id: 'display-settings', name: 'Display Settings', icon: Settings },
+      ]
+    },
+    // Future main menus can be added here
+    // {
+    //   id: 'products',
+    //   name: 'Products',
+    //   icon: Package,
+    //   subMenus: [
+    //     { id: 'menu-items', name: 'Menu Items', icon: Coffee },
+    //     { id: 'categories', name: 'Categories', icon: Folder },
+    //   ]
+    // },
   ];
 
   const renderActiveTab = () => {
@@ -94,78 +115,113 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen coffee-gradient">
+    <div className="min-h-screen professional-gradient flex">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
+        <div
+          className="fixed inset-0 bg-amber-900/50 backdrop-blur-sm z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
-      {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-72 bg-white/90 backdrop-blur-md shadow-2xl transform ${
+      {/* Professional Brown Sidebar */}
+      <div className={`fixed inset-y-0 left-0 z-50 w-80 sidebar transform ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      } transition-all duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0`}>
-        <div className="flex items-center justify-between h-20 px-6 border-b border-white/20">
+      } transition-all duration-300 ease-in-out lg:translate-x-0 lg:static lg:block`}>
+        <div className="flex items-center justify-between h-20 px-6 border-b border-amber-700/30">
           <div className="flex items-center space-x-3">
-            <div className="h-10 w-10 bg-gradient-to-br from-amber-500 to-amber-700 rounded-xl flex items-center justify-center shadow-lg">
-              <Coffee className="h-6 w-6 text-white" />
+            <div className="h-12 w-12 bg-gradient-to-br from-amber-600 to-amber-800 rounded-xl flex items-center justify-center shadow-lg">
+              <Coffee className="h-7 w-7 text-white" />
             </div>
             <div>
-              <span className="text-xl font-bold coffee-text-gradient">Coffee Admin</span>
-              <p className="text-xs text-gray-500">Management Panel</p>
+              <span className="text-xl font-bold text-white font-serif">Coffee Admin</span>
+              <p className="text-xs text-amber-200">Professional Management</p>
             </div>
           </div>
           <button
             onClick={() => setSidebarOpen(false)}
-            className="lg:hidden p-2 rounded-lg hover:bg-white/50 transition-colors"
+            className="lg:hidden p-2 rounded-lg hover:bg-amber-700/50 transition-colors"
           >
-            <X className="h-5 w-5 text-gray-600" />
+            <X className="h-5 w-5 text-amber-200" />
           </button>
         </div>
 
         <nav className="mt-8 px-4">
-          <div className="space-y-2">
-            {tabs.map((tab) => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.id;
+          <div className="space-y-1">
+            {mainMenus.map((menu) => {
+              const Icon = menu.icon;
+              const isExpanded = expandedMenus.has(menu.id);
+              const hasActiveSubMenu = menu.subMenus.some(subMenu => activeTab === subMenu.id);
+              
               return (
-                <button
-                  key={tab.id}
-                  onClick={() => {
-                    setActiveTab(tab.id);
-                    setSidebarOpen(false);
-                  }}
-                  className={`w-full flex items-center space-x-4 px-4 py-3 rounded-xl text-left transition-all duration-200 group ${
-                    isActive
-                      ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg transform scale-105'
-                      : 'text-gray-700 hover:bg-white/50 hover:shadow-md hover:scale-105'
-                  }`}
-                >
-                  <Icon className={`h-5 w-5 ${isActive ? 'text-white' : 'text-gray-500 group-hover:text-amber-600'}`} />
-                  <span className="font-semibold">{tab.name}</span>
-                </button>
+                <div key={menu.id} className="space-y-1">
+                  {/* Main Menu Item */}
+                  <button
+                    onClick={() => {
+                      setExpandedMenus(prev => {
+                        const newSet = new Set(prev);
+                        if (newSet.has(menu.id)) {
+                          newSet.delete(menu.id);
+                        } else {
+                          newSet.add(menu.id);
+                        }
+                        return newSet;
+                      });
+                    }}
+                    className={`w-full sidebar-item group ${hasActiveSubMenu ? 'active' : ''}`}
+                  >
+                    <Icon className="h-5 w-5" />
+                    <span className="font-semibold flex-1 text-left">{menu.name}</span>
+                    {isExpanded ? (
+                      <ChevronDown className="h-4 w-4" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4" />
+                    )}
+                  </button>
+                  
+                  {/* Sub Menu Items */}
+                  {isExpanded && (
+                    <div className="ml-4 space-y-1">
+                      {menu.subMenus.map((subMenu) => {
+                        const SubIcon = subMenu.icon;
+                        const isActive = activeTab === subMenu.id;
+                        return (
+                          <button
+                            key={subMenu.id}
+                            onClick={() => {
+                              setActiveTab(subMenu.id);
+                              setSidebarOpen(false);
+                            }}
+                            className={`w-full sidebar-sub-item group ${isActive ? 'active' : ''}`}
+                          >
+                            <SubIcon className="h-4 w-4" />
+                            <span className="font-medium">{subMenu.name}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               );
             })}
           </div>
         </nav>
 
-        <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-white/20">
-          <div className="flex items-center space-x-3 mb-4 p-3 bg-white/50 rounded-xl">
-            <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-amber-700 rounded-xl flex items-center justify-center shadow-lg">
+        <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-amber-700/30">
+          <div className="flex items-center space-x-3 mb-4 p-3 bg-amber-800/30 rounded-lg">
+            <div className="w-10 h-10 bg-gradient-to-br from-amber-600 to-amber-800 rounded-lg flex items-center justify-center shadow-lg">
               <span className="text-sm font-bold text-white">
                 {user.username.charAt(0).toUpperCase()}
               </span>
             </div>
             <div>
-              <p className="text-sm font-semibold text-gray-900">{user.username}</p>
-              <p className="text-xs text-gray-500 capitalize">{user.role}</p>
+              <p className="text-sm font-semibold text-white">{user.username}</p>
+              <p className="text-xs text-amber-200 capitalize">{user.role}</p>
             </div>
           </div>
           <button
             onClick={handleLogout}
-            className="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all duration-200 group"
+            className="w-full flex items-center space-x-3 px-4 py-3 text-amber-200 hover:bg-red-600/20 hover:text-red-300 rounded-lg transition-all duration-200 group"
           >
             <LogOut className="h-5 w-5 group-hover:scale-110 transition-transform" />
             <span className="font-semibold">Sign Out</span>
@@ -174,27 +230,33 @@ export default function Dashboard() {
       </div>
 
       {/* Main content */}
-      <div className="lg:ml-72">
-        {/* Top bar */}
-        <div className="bg-white/80 backdrop-blur-md shadow-lg border-b border-white/20 h-20 flex items-center justify-between px-8">
+      <div className="flex-1 flex flex-col min-h-screen">
+        {/* Professional Top bar */}
+        <div className="bg-white/90 backdrop-blur-md shadow-lg border-b border-amber-200 h-20 flex items-center justify-between px-8 flex-shrink-0">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden p-3 rounded-xl hover:bg-white/50 transition-colors"
+            className="lg:hidden p-3 rounded-lg hover:bg-amber-100 transition-colors"
           >
-            <Menu className="h-6 w-6 text-gray-600" />
+            <Menu className="h-6 w-6 text-amber-700" />
           </button>
-          
+
           <div className="flex items-center space-x-6">
             <div>
-              <h1 className="text-2xl font-bold coffee-text-gradient">
-                {tabs.find(tab => tab.id === activeTab)?.name || 'Dashboard'}
+              <h1 className="text-2xl font-bold professional-text-gradient font-serif">
+                {(() => {
+                  for (const menu of mainMenus) {
+                    const subMenu = menu.subMenus.find(sub => sub.id === activeTab);
+                    if (subMenu) return subMenu.name;
+                  }
+                  return 'Dashboard';
+                })()}
               </h1>
-              <p className="text-sm text-gray-500">Manage your coffee shop content</p>
+              <p className="text-sm text-amber-600">Professional coffee shop management</p>
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-4">
-            <div className="hidden md:flex items-center space-x-2 text-sm text-gray-600">
+            <div className="hidden md:flex items-center space-x-2 text-sm text-amber-600">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
               <span>Online</span>
             </div>
@@ -202,7 +264,7 @@ export default function Dashboard() {
         </div>
 
         {/* Content */}
-        <main className="p-8 animate-fade-in">
+        <main className="flex-1 p-8 animate-fade-in overflow-auto">
           <div className="max-w-7xl mx-auto">
             {renderActiveTab()}
           </div>

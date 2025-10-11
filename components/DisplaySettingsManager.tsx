@@ -4,10 +4,12 @@ import { useState, useEffect } from 'react';
 import { Save, RefreshCw, ToggleLeft, ToggleRight, Clock, Star, History, Lightbulb, Settings } from 'lucide-react';
 
 interface DisplaySetting {
-  id: number;
+  _id?: string;
   setting_key: string;
   setting_value: string;
   description: string;
+  created_at?: Date;
+  updated_at?: Date;
 }
 
 export default function DisplaySettingsManager() {
@@ -178,8 +180,8 @@ export default function DisplaySettingsManager() {
         </div>
         
         <div className="space-y-4">
-          {settings.map((setting) => (
-            <div key={setting.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+          {settings.map((setting, index) => (
+            <div key={setting.setting_key || `setting-${index}`} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
               <div className="flex items-center space-x-4">
                 <div className={`w-3 h-3 rounded-full ${
                   setting.setting_value === 'true' ? 'bg-emerald-500' : 'bg-gray-400'

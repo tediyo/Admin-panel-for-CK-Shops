@@ -113,8 +113,8 @@ export default function HomeContentManager() {
     <div className="space-y-8 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold coffee-text-gradient">Home Content Management</h2>
-          <p className="text-gray-600 mt-1">Customize your coffee shop's homepage content</p>
+          <h2 className="text-3xl font-bold professional-text-gradient font-serif">Home Content Management</h2>
+          <p className="text-amber-700 mt-1">Customize your coffee shop's homepage content</p>
         </div>
         <button
           onClick={fetchContent}
@@ -143,8 +143,8 @@ export default function HomeContentManager() {
               <Home className="h-5 w-5 text-white" />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-gray-900">Hero Section</h3>
-              <p className="text-sm text-gray-600">Configure your main landing area</p>
+              <h3 className="text-xl font-bold text-amber-900">Hero Section</h3>
+              <p className="text-sm text-amber-700">Configure your main landing area</p>
             </div>
           </div>
           <button
@@ -169,7 +169,7 @@ export default function HomeContentManager() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {heroFields.map((field, index) => (
             <div key={field.key} className="animate-slide-up" style={{ animationDelay: `${index * 100}ms` }}>
-              <label className="block text-sm font-semibold text-gray-700 mb-3">
+              <label className="block text-sm font-semibold text-amber-800 mb-3">
                 {field.label}
               </label>
               <textarea
@@ -213,8 +213,8 @@ export default function HomeContentManager() {
             <Eye className="h-5 w-5 text-white" />
           </div>
           <div>
-            <h3 className="text-xl font-bold text-gray-900">Live Preview</h3>
-            <p className="text-sm text-gray-600">See how your content will appear to customers</p>
+            <h3 className="text-xl font-bold text-amber-900">Live Preview</h3>
+            <p className="text-sm text-amber-700">See how your content will appear to customers</p>
           </div>
         </div>
         
