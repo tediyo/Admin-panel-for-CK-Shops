@@ -110,105 +110,119 @@ export default function CoffeeHistoryManager() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 animate-fade-in">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Coffee History Management</h2>
-        <div className="flex space-x-2">
+        <div>
+          <h2 className="text-3xl font-bold coffee-text-gradient">Coffee History Management</h2>
+          <p className="text-gray-600 mt-1">Create a timeline of coffee's rich history</p>
+        </div>
+        <div className="flex space-x-3">
           <button
             onClick={fetchHistory}
             className="btn-secondary flex items-center space-x-2"
           >
-            <RefreshCw className="h-4 w-4" />
+            <RefreshCw className="h-5 w-5" />
             <span>Refresh</span>
           </button>
           <button
             onClick={() => setShowForm(true)}
             className="btn-primary flex items-center space-x-2"
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="h-5 w-5" />
             <span>Add Item</span>
           </button>
         </div>
       </div>
 
       {message && (
-        <div className={`p-4 rounded-lg ${
+        <div className={`p-4 rounded-xl flex items-center space-x-3 ${
           message.includes('Error') 
             ? 'bg-red-50 text-red-700 border border-red-200' 
-            : 'bg-green-50 text-green-700 border border-green-200'
+            : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
         }`}>
-          {message}
+          <div className={`w-2 h-2 rounded-full ${message.includes('Error') ? 'bg-red-500' : 'bg-emerald-500'}`}></div>
+          <span className="font-semibold">{message}</span>
         </div>
       )}
 
       {/* Timeline View */}
-      <div className="space-y-4">
-        {history
-          .sort((a, b) => parseInt(a.year) - parseInt(b.year))
-          .map((item, index) => (
-            <div key={item.id} className="card">
-              <div className="flex items-start space-x-4">
-                <div className="flex-shrink-0">
-                  <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
-                    <span className="text-primary-700 font-bold">{item.year}</span>
-                  </div>
-                </div>
+      <div className="relative">
+        {/* Timeline Line */}
+        <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gradient-to-b from-amber-200 via-amber-400 to-amber-200"></div>
+        
+        <div className="space-y-8">
+          {history
+            .sort((a, b) => parseInt(a.year) - parseInt(b.year))
+            .map((item, index) => (
+              <div key={item.id} className="relative animate-slide-up" style={{ animationDelay: `${index * 100}ms` }}>
+                {/* Timeline Dot */}
+                <div className="absolute left-6 w-4 h-4 bg-gradient-to-br from-amber-500 to-amber-700 rounded-full border-4 border-white shadow-lg z-10"></div>
                 
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-gray-900">{item.title}</h3>
+                <div className="ml-16 card group hover:scale-105 transition-all duration-300">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center space-x-4">
+                      <div className="bg-gradient-to-br from-amber-500 to-amber-700 text-white px-4 py-2 rounded-xl font-bold text-lg shadow-lg">
+                        {item.year}
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold text-gray-900">{item.title}</h3>
+                        <div className="flex items-center space-x-2 mt-1">
+                          <span className={`badge ${
+                            item.is_active ? 'badge-success' : 'badge-error'
+                          }`}>
+                            {item.is_active ? 'Active' : 'Inactive'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    
                     <div className="flex space-x-2">
                       <button
                         onClick={() => openEditForm(item)}
-                        className="p-2 text-gray-400 hover:text-primary-600"
+                        className="p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all duration-200"
                       >
                         <Edit className="h-4 w-4" />
                       </button>
                       <button
                         onClick={() => handleDelete(item.id)}
-                        className="p-2 text-gray-400 hover:text-red-600"
+                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
                     </div>
                   </div>
                   
-                  <p className="text-gray-600 mt-2">{item.description}</p>
+                  <p className="text-gray-600 leading-relaxed mb-4">{item.description}</p>
                   
                   {item.image_url && (
-                    <div className="mt-3">
+                    <div className="mb-4">
                       <img
                         src={item.image_url}
                         alt={item.title}
-                        className="w-32 h-20 object-cover rounded-lg"
+                        className="w-full max-w-md h-48 object-cover rounded-xl shadow-lg"
                       />
                     </div>
                   )}
-                  
-                  <div className="mt-3">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      item.is_active
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-gray-100 text-gray-800'
-                    }`}>
-                      {item.is_active ? 'Active' : 'Inactive'}
-                    </span>
-                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+        </div>
       </div>
 
       {/* Add/Edit Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">
-                {editingItem ? 'Edit History Item' : 'Add New History Item'}
-              </h3>
-              <button onClick={closeForm} className="text-gray-400 hover:text-gray-600">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-lg mx-4 animate-slide-up">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-3">
+                <div className="h-10 w-10 bg-gradient-to-br from-amber-500 to-amber-700 rounded-xl flex items-center justify-center">
+                  <History className="h-5 w-5 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900">
+                  {editingItem ? 'Edit History Item' : 'Add New History Item'}
+                </h3>
+              </div>
+              <button onClick={closeForm} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -249,36 +263,39 @@ function HistoryForm({ item, onSave, onCancel, saving }: HistoryFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Year *
-        </label>
-        <input
-          type="text"
-          value={formData.year}
-          onChange={(e) => setFormData({ ...formData, year: e.target.value })}
-          className="input-field"
-          placeholder="e.g., 1500s, 1600s, 1900s"
-          required
-        />
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-3">
+            Year *
+          </label>
+          <input
+            type="text"
+            value={formData.year}
+            onChange={(e) => setFormData({ ...formData, year: e.target.value })}
+            className="input-field"
+            placeholder="e.g., 1500s, 1600s, 1900s"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-3">
+            Title *
+          </label>
+          <input
+            type="text"
+            value={formData.title}
+            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            className="input-field"
+            placeholder="Enter historical event title"
+            required
+          />
+        </div>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Title *
-        </label>
-        <input
-          type="text"
-          value={formData.title}
-          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-          className="input-field"
-          required
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-semibold text-gray-700 mb-3">
           Description *
         </label>
         <textarea
@@ -286,12 +303,13 @@ function HistoryForm({ item, onSave, onCancel, saving }: HistoryFormProps) {
           onChange={(e) => setFormData({ ...formData, description: e.target.value })}
           className="input-field"
           rows={4}
+          placeholder="Describe this historical coffee event..."
           required
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-semibold text-gray-700 mb-3">
           Image URL
         </label>
         <input
@@ -299,22 +317,23 @@ function HistoryForm({ item, onSave, onCancel, saving }: HistoryFormProps) {
           value={formData.image_url}
           onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
           className="input-field"
+          placeholder="https://example.com/historical-image.jpg"
         />
       </div>
 
-      <div>
-        <label className="flex items-center">
+      <div className="flex items-center justify-center">
+        <label className="flex items-center space-x-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer">
           <input
             type="checkbox"
             checked={formData.is_active}
             onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-            className="mr-2"
+            className="w-5 h-5 text-amber-600 rounded focus:ring-amber-500"
           />
-          <span className="text-sm text-gray-700">Active</span>
+          <span className="text-sm font-semibold text-gray-700">Active</span>
         </label>
       </div>
 
-      <div className="flex space-x-2 pt-4">
+      <div className="flex space-x-3 pt-6">
         <button
           type="submit"
           disabled={saving}
@@ -322,13 +341,13 @@ function HistoryForm({ item, onSave, onCancel, saving }: HistoryFormProps) {
         >
           {saving ? (
             <>
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <div className="spinner" />
               <span>Saving...</span>
             </>
           ) : (
             <>
-              <Save className="h-4 w-4" />
-              <span>Save</span>
+              <Save className="h-5 w-5" />
+              <span>Save Item</span>
             </>
           )}
         </button>

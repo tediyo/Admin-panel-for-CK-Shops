@@ -1,10 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-import db from '@/lib/database';
+import { getDatabase } from '@/lib/mongodb';
+import { HighlightCard } from '@/lib/models';
+import { ObjectId } from 'mongodb';
 
 // GET - Fetch all highlight cards
 export async function GET() {
   try {
-    const cards = db.prepare('SELECT * FROM highlight_cards ORDER BY sort_order, created_at').all();
+    const db = await getDatabase();
+    const collection = db.collection<HighlightCard>('highlight_cards');
+    
+    const cards = await collection
+      .find({})
+      .sort({ sort_order: 1, _id: 1 })
+      .toArray();
+
     return NextResponse.json({ success: true, data: cards });
   } catch (error) {
     console.error('Error fetching highlight cards:', error);
@@ -18,16 +27,16 @@ export async function GET() {
 // POST - Create new highlight card
 export async function POST(request: NextRequest) {
   try {
-    const {
-      title,
-      description,
-      image_url,
-      price,
-      badge,
-      is_popular,
-      is_seasonal,
-      is_active,
-      sort_order
+    const { 
+      title, 
+      description, 
+      image_url, 
+      price, 
+      badge, 
+      is_popular, 
+      is_seasonal, 
+      is_active, 
+      sort_order 
     } = await request.json();
 
     if (!title || !description) {
@@ -37,29 +46,30 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const stmt = db.prepare(`
-      INSERT INTO highlight_cards (
-        title, description, image_url, price, badge, is_popular, 
-        is_seasonal, is_active, sort_order
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
+    const db = await getDatabase();
+    const collection = db.collection<HighlightCard>('highlight_cards');
 
-    const result = stmt.run(
+    const now = new Date();
+    const newCard: Omit<HighlightCard, '_id'> = {
       title,
       description,
-      image_url || null,
-      price || null,
-      badge || null,
-      is_popular || false,
-      is_seasonal || false,
-      is_active !== false,
-      sort_order || 0
-    );
+      image_url: image_url || '',
+      price: price || '',
+      badge: badge || '',
+      is_popular: is_popular || false,
+      is_seasonal: is_seasonal || false,
+      is_active: is_active !== false,
+      sort_order: sort_order || 0,
+      created_at: now,
+      updated_at: now
+    };
 
-    return NextResponse.json({
-      success: true,
+    const result = await collection.insertOne(newCard);
+
+    return NextResponse.json({ 
+      success: true, 
       message: 'Highlight card created successfully',
-      id: result.lastInsertRowid
+      id: result.insertedId
     });
   } catch (error) {
     console.error('Error creating highlight card:', error);
@@ -73,45 +83,45 @@ export async function POST(request: NextRequest) {
 // PUT - Update highlight card
 export async function PUT(request: NextRequest) {
   try {
-    const {
+    const { 
       id,
-      title,
-      description,
-      image_url,
-      price,
-      badge,
-      is_popular,
-      is_seasonal,
-      is_active,
-      sort_order
+      title, 
+      description, 
+      image_url, 
+      price, 
+      badge, 
+      is_popular, 
+      is_seasonal, 
+      is_active, 
+      sort_order 
     } = await request.json();
 
     if (!id || !title || !description) {
       return NextResponse.json(
-        { error: 'ID, title and description are required' },
+        { error: 'ID, title, and description are required' },
         { status: 400 }
       );
     }
 
-    const stmt = db.prepare(`
-      UPDATE highlight_cards SET
-        title = ?, description = ?, image_url = ?, price = ?, badge = ?,
-        is_popular = ?, is_seasonal = ?, is_active = ?, sort_order = ?,
-        updated_at = CURRENT_TIMESTAMP
-      WHERE id = ?
-    `);
+    const db = await getDatabase();
+    const collection = db.collection<HighlightCard>('highlight_cards');
 
-    stmt.run(
-      title,
-      description,
-      image_url || null,
-      price || null,
-      badge || null,
-      is_popular || false,
-      is_seasonal || false,
-      is_active !== false,
-      sort_order || 0,
-      id
+    await collection.updateOne(
+      { _id: new ObjectId(id) },
+      {
+        $set: {
+          title,
+          description,
+          image_url: image_url || '',
+          price: price || '',
+          badge: badge || '',
+          is_popular: is_popular || false,
+          is_seasonal: is_seasonal || false,
+          is_active: is_active !== false,
+          sort_order: sort_order || 0,
+          updated_at: new Date()
+        }
+      }
     );
 
     return NextResponse.json({ success: true, message: 'Highlight card updated successfully' });
@@ -137,8 +147,10 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const stmt = db.prepare('DELETE FROM highlight_cards WHERE id = ?');
-    stmt.run(id);
+    const db = await getDatabase();
+    const collection = db.collection<HighlightCard>('highlight_cards');
+
+    await collection.deleteOne({ _id: new ObjectId(id) });
 
     return NextResponse.json({ success: true, message: 'Highlight card deleted successfully' });
   } catch (error) {

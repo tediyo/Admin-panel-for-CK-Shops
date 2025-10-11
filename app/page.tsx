@@ -50,100 +50,114 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-secondary-50">
-      <div className="max-w-md w-full space-y-8 p-8">
-        <div className="text-center">
-          <div className="mx-auto h-16 w-16 bg-primary-600 rounded-full flex items-center justify-center">
-            <Coffee className="h-8 w-8 text-white" />
-          </div>
-          <h2 className="mt-6 text-3xl font-bold text-gray-900">
-            Admin Panel
-          </h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Sign in to manage your coffee shop content
-          </p>
-        </div>
-
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                Username
-              </label>
-              <input
-                id="username"
-                name="username"
-                type="text"
-                required
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="input-field mt-1"
-                placeholder="Enter your username"
-              />
+    <div className="min-h-screen coffee-gradient flex items-center justify-center relative overflow-hidden">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 opacity-5">
+        <div className="absolute top-10 left-10 w-32 h-32 bg-amber-300 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-10 right-10 w-40 h-40 bg-orange-300 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/4 w-24 h-24 bg-yellow-300 rounded-full blur-2xl"></div>
+      </div>
+      
+      <div className="relative z-10 max-w-md w-full mx-4">
+        <div className="card-elevated animate-fade-in">
+          <div className="text-center mb-8">
+            <div className="mx-auto h-20 w-20 bg-gradient-to-br from-amber-500 to-amber-700 rounded-2xl flex items-center justify-center shadow-coffee-lg animate-bounce-gentle">
+              <Coffee className="h-10 w-10 text-white" />
             </div>
+            <h2 className="mt-6 text-4xl font-bold coffee-text-gradient">
+              Coffee Admin
+            </h2>
+            <p className="mt-3 text-gray-600 font-medium">
+              Manage your coffee shop content with style
+            </p>
+          </div>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
-              <div className="mt-1 relative">
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            <div className="space-y-5">
+              <div>
+                <label htmlFor="username" className="block text-sm font-semibold text-gray-700 mb-2">
+                  Username
+                </label>
                 <input
-                  id="password"
-                  name="password"
-                  type={showPassword ? 'text' : 'password'}
+                  id="username"
+                  name="username"
+                  type="text"
                   required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="input-field pr-10"
-                  placeholder="Enter your password"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="input-field"
+                  placeholder="Enter your username"
                 />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-5 w-5 text-gray-400" />
-                  ) : (
-                    <Eye className="h-5 w-5 text-gray-400" />
-                  )}
-                </button>
+              </div>
+
+              <div>
+                <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
+                  Password
+                </label>
+                <div className="relative">
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="input-field pr-12"
+                    placeholder="Enter your password"
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 pr-4 flex items-center hover:text-amber-600 transition-colors"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-5 w-5 text-gray-400" />
+                    ) : (
+                      <Eye className="h-5 w-5 text-gray-400" />
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
 
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
-              {error}
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-center space-x-2">
+                <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                <span className="font-medium">{error}</span>
+              </div>
+            )}
+
+            <div>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full btn-primary flex items-center justify-center space-x-3 py-4 text-lg"
+              >
+                {isLoading ? (
+                  <>
+                    <div className="spinner" />
+                    <span>Signing in...</span>
+                  </>
+                ) : (
+                  <>
+                    <Lock className="h-5 w-5" />
+                    <span>Sign In</span>
+                  </>
+                )}
+              </button>
             </div>
-          )}
 
-          <div>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full btn-primary flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoading ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Signing in...</span>
-                </>
-              ) : (
-                <>
-                  <Lock className="h-4 w-4" />
-                  <span>Sign In</span>
-                </>
-              )}
-            </button>
-          </div>
-
-          <div className="text-center text-sm text-gray-600">
-            <p>Default credentials:</p>
-            <p><strong>Username:</strong> admin</p>
-            <p><strong>Password:</strong> admin123</p>
-          </div>
-        </form>
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+              <div className="text-center">
+                <p className="text-sm font-semibold text-amber-800 mb-2">Demo Credentials</p>
+                <div className="space-y-1 text-sm text-amber-700">
+                  <p><span className="font-medium">Username:</span> admin</p>
+                  <p><span className="font-medium">Password:</span> admin123</p>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

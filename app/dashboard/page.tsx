@@ -94,36 +94,42 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen coffee-gradient">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform ${
+      <div className={`fixed inset-y-0 left-0 z-50 w-72 bg-white/90 backdrop-blur-md shadow-2xl transform ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      } transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0`}>
-        <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
-          <div className="flex items-center space-x-2">
-            <Coffee className="h-8 w-8 text-primary-600" />
-            <span className="text-xl font-bold text-gray-900">Admin Panel</span>
+      } transition-all duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0`}>
+        <div className="flex items-center justify-between h-20 px-6 border-b border-white/20">
+          <div className="flex items-center space-x-3">
+            <div className="h-10 w-10 bg-gradient-to-br from-amber-500 to-amber-700 rounded-xl flex items-center justify-center shadow-lg">
+              <Coffee className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <span className="text-xl font-bold coffee-text-gradient">Coffee Admin</span>
+              <p className="text-xs text-gray-500">Management Panel</p>
+            </div>
           </div>
           <button
             onClick={() => setSidebarOpen(false)}
-            className="lg:hidden p-2 rounded-lg hover:bg-gray-100"
+            className="lg:hidden p-2 rounded-lg hover:bg-white/50 transition-colors"
           >
-            <X className="h-5 w-5" />
+            <X className="h-5 w-5 text-gray-600" />
           </button>
         </div>
 
-        <nav className="mt-6 px-3">
-          <div className="space-y-1">
+        <nav className="mt-8 px-4">
+          <div className="space-y-2">
             {tabs.map((tab) => {
               const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
               return (
                 <button
                   key={tab.id}
@@ -131,63 +137,75 @@ export default function Dashboard() {
                     setActiveTab(tab.id);
                     setSidebarOpen(false);
                   }}
-                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                    activeTab === tab.id
-                      ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-600'
-                      : 'text-gray-700 hover:bg-gray-100'
+                  className={`w-full flex items-center space-x-4 px-4 py-3 rounded-xl text-left transition-all duration-200 group ${
+                    isActive
+                      ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg transform scale-105'
+                      : 'text-gray-700 hover:bg-white/50 hover:shadow-md hover:scale-105'
                   }`}
                 >
-                  <Icon className="h-5 w-5" />
-                  <span className="font-medium">{tab.name}</span>
+                  <Icon className={`h-5 w-5 ${isActive ? 'text-white' : 'text-gray-500 group-hover:text-amber-600'}`} />
+                  <span className="font-semibold">{tab.name}</span>
                 </button>
               );
             })}
           </div>
         </nav>
 
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
-              <span className="text-sm font-medium text-primary-700">
+        <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-white/20">
+          <div className="flex items-center space-x-3 mb-4 p-3 bg-white/50 rounded-xl">
+            <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-amber-700 rounded-xl flex items-center justify-center shadow-lg">
+              <span className="text-sm font-bold text-white">
                 {user.username.charAt(0).toUpperCase()}
               </span>
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-900">{user.username}</p>
-              <p className="text-xs text-gray-500">{user.role}</p>
+              <p className="text-sm font-semibold text-gray-900">{user.username}</p>
+              <p className="text-xs text-gray-500 capitalize">{user.role}</p>
             </div>
           </div>
           <button
             onClick={handleLogout}
-            className="w-full flex items-center space-x-2 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+            className="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all duration-200 group"
           >
-            <LogOut className="h-4 w-4" />
-            <span>Sign Out</span>
+            <LogOut className="h-5 w-5 group-hover:scale-110 transition-transform" />
+            <span className="font-semibold">Sign Out</span>
           </button>
         </div>
       </div>
 
       {/* Main content */}
-      <div className="lg:ml-64">
+      <div className="lg:ml-72">
         {/* Top bar */}
-        <div className="bg-white shadow-sm border-b border-gray-200 h-16 flex items-center justify-between px-6">
+        <div className="bg-white/80 backdrop-blur-md shadow-lg border-b border-white/20 h-20 flex items-center justify-between px-8">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden p-2 rounded-lg hover:bg-gray-100"
+            className="lg:hidden p-3 rounded-xl hover:bg-white/50 transition-colors"
           >
-            <Menu className="h-5 w-5" />
+            <Menu className="h-6 w-6 text-gray-600" />
           </button>
           
+          <div className="flex items-center space-x-6">
+            <div>
+              <h1 className="text-2xl font-bold coffee-text-gradient">
+                {tabs.find(tab => tab.id === activeTab)?.name || 'Dashboard'}
+              </h1>
+              <p className="text-sm text-gray-500">Manage your coffee shop content</p>
+            </div>
+          </div>
+          
           <div className="flex items-center space-x-4">
-            <h1 className="text-xl font-semibold text-gray-900">
-              {tabs.find(tab => tab.id === activeTab)?.name || 'Dashboard'}
-            </h1>
+            <div className="hidden md:flex items-center space-x-2 text-sm text-gray-600">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <span>Online</span>
+            </div>
           </div>
         </div>
 
         {/* Content */}
-        <main className="p-6">
-          {renderActiveTab()}
+        <main className="p-8 animate-fade-in">
+          <div className="max-w-7xl mx-auto">
+            {renderActiveTab()}
+          </div>
         </main>
       </div>
     </div>
