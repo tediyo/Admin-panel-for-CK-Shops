@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Save, RefreshCw, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Save, RefreshCw, ToggleLeft, ToggleRight, Clock, Star, History, Lightbulb, Settings } from 'lucide-react';
 
 interface DisplaySetting {
   id: number;
