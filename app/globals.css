@@ -67,6 +67,14 @@
   .sidebar-item.active {
     @apply bg-amber-700 text-white shadow-lg;
   }
+
+  .sidebar-sub-item {
+    @apply flex items-center space-x-3 px-4 py-2 rounded-lg text-amber-200 hover:bg-amber-700/50 hover:text-white transition-all duration-200 text-sm;
+  }
+
+  .sidebar-sub-item.active {
+    @apply bg-amber-700 text-white shadow-md;
+  }
   
   /* Modern Status Badges */
   .badge {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Save, X, RefreshCw } from 'lucide-react';
+import { Plus, Edit, Trash2, Save, X, RefreshCw, Lightbulb } from 'lucide-react';
 
 interface CoffeeFact {
   _id?: string;
@@ -149,7 +149,7 @@ export default function CoffeeFactsManager() {
       {/* Facts Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {facts.map((fact, index) => (
-          <div key={fact.id} className="card group hover:scale-105 transition-all duration-300 animate-slide-up" style={{ animationDelay: `${index * 100}ms` }}>
+          <div key={fact._id || fact.id || `fact-${index}`} className="card group hover:scale-105 transition-all duration-300 animate-slide-up" style={{ animationDelay: `${index * 100}ms` }}>
             <div className="flex items-start justify-between mb-4">
               <div className="flex-1">
                 <div className="h-12 w-12 bg-gradient-to-br from-amber-500 to-amber-700 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">

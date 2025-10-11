@@ -12,7 +12,9 @@ import {
   Lightbulb,
   LogOut,
   Menu,
-  X
+  X,
+  ChevronDown,
+  ChevronRight
 } from 'lucide-react';
 import HomeContentManager from '@/components/HomeContentManager';
 import DisplaySettingsManager from '@/components/DisplaySettingsManager';
@@ -60,12 +62,31 @@ export default function Dashboard() {
     router.push('/');
   };
 
-  const tabs = [
-    { id: 'home-content', name: 'Home Content', icon: Home },
-    { id: 'display-settings', name: 'Display Settings', icon: Settings },
-    { id: 'highlight-cards', name: 'Highlight Cards', icon: Star },
-    { id: 'coffee-history', name: 'Coffee History', icon: History },
-    { id: 'coffee-facts', name: 'Coffee Facts', icon: Lightbulb },
+  const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set(['home']));
+
+  const mainMenus = [
+    {
+      id: 'home',
+      name: 'Home Content',
+      icon: Home,
+      subMenus: [
+        { id: 'home-content', name: 'Home Content', icon: Home },
+        { id: 'coffee-facts', name: 'Coffee Facts', icon: Lightbulb },
+        { id: 'coffee-history', name: 'Coffee History', icon: History },
+        { id: 'highlight-cards', name: 'Highlight Cards', icon: Star },
+        { id: 'display-settings', name: 'Display Settings', icon: Settings },
+      ]
+    },
+    // Future main menus can be added here
+    // {
+    //   id: 'products',
+    //   name: 'Products',
+    //   icon: Package,
+    //   subMenus: [
+    //     { id: 'menu-items', name: 'Menu Items', icon: Coffee },
+    //     { id: 'categories', name: 'Categories', icon: Folder },
+    //   ]
+    // },
   ];
 
   const renderActiveTab = () => {
@@ -94,7 +115,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen professional-gradient">
+    <div className="min-h-screen professional-gradient flex">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div
@@ -106,7 +127,7 @@ export default function Dashboard() {
       {/* Professional Brown Sidebar */}
       <div className={`fixed inset-y-0 left-0 z-50 w-80 sidebar transform ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      } transition-all duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0`}>
+      } transition-all duration-300 ease-in-out lg:translate-x-0 lg:static lg:block`}>
         <div className="flex items-center justify-between h-20 px-6 border-b border-amber-700/30">
           <div className="flex items-center space-x-3">
             <div className="h-12 w-12 bg-gradient-to-br from-amber-600 to-amber-800 rounded-xl flex items-center justify-center shadow-lg">
@@ -126,22 +147,61 @@ export default function Dashboard() {
         </div>
 
         <nav className="mt-8 px-4">
-          <div className="space-y-2">
-            {tabs.map((tab) => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.id;
+          <div className="space-y-1">
+            {mainMenus.map((menu) => {
+              const Icon = menu.icon;
+              const isExpanded = expandedMenus.has(menu.id);
+              const hasActiveSubMenu = menu.subMenus.some(subMenu => activeTab === subMenu.id);
+              
               return (
-                <button
-                  key={tab.id}
-                  onClick={() => {
-                    setActiveTab(tab.id);
-                    setSidebarOpen(false);
-                  }}
-                  className={`w-full sidebar-item group ${isActive ? 'active' : ''}`}
-                >
-                  <Icon className="h-5 w-5" />
-                  <span className="font-semibold">{tab.name}</span>
-                </button>
+                <div key={menu.id} className="space-y-1">
+                  {/* Main Menu Item */}
+                  <button
+                    onClick={() => {
+                      setExpandedMenus(prev => {
+                        const newSet = new Set(prev);
+                        if (newSet.has(menu.id)) {
+                          newSet.delete(menu.id);
+                        } else {
+                          newSet.add(menu.id);
+                        }
+                        return newSet;
+                      });
+                    }}
+                    className={`w-full sidebar-item group ${hasActiveSubMenu ? 'active' : ''}`}
+                  >
+                    <Icon className="h-5 w-5" />
+                    <span className="font-semibold flex-1 text-left">{menu.name}</span>
+                    {isExpanded ? (
+                      <ChevronDown className="h-4 w-4" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4" />
+                    )}
+                  </button>
+                  
+                  {/* Sub Menu Items */}
+                  {isExpanded && (
+                    <div className="ml-4 space-y-1">
+                      {menu.subMenus.map((subMenu) => {
+                        const SubIcon = subMenu.icon;
+                        const isActive = activeTab === subMenu.id;
+                        return (
+                          <button
+                            key={subMenu.id}
+                            onClick={() => {
+                              setActiveTab(subMenu.id);
+                              setSidebarOpen(false);
+                            }}
+                            className={`w-full sidebar-sub-item group ${isActive ? 'active' : ''}`}
+                          >
+                            <SubIcon className="h-4 w-4" />
+                            <span className="font-medium">{subMenu.name}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               );
             })}
           </div>
@@ -170,9 +230,9 @@ export default function Dashboard() {
       </div>
 
       {/* Main content */}
-      <div className="lg:ml-80">
+      <div className="flex-1 flex flex-col min-h-screen">
         {/* Professional Top bar */}
-        <div className="bg-white/90 backdrop-blur-md shadow-lg border-b border-amber-200 h-20 flex items-center justify-between px-8">
+        <div className="bg-white/90 backdrop-blur-md shadow-lg border-b border-amber-200 h-20 flex items-center justify-between px-8 flex-shrink-0">
           <button
             onClick={() => setSidebarOpen(true)}
             className="lg:hidden p-3 rounded-lg hover:bg-amber-100 transition-colors"
@@ -183,7 +243,13 @@ export default function Dashboard() {
           <div className="flex items-center space-x-6">
             <div>
               <h1 className="text-2xl font-bold professional-text-gradient font-serif">
-                {tabs.find(tab => tab.id === activeTab)?.name || 'Dashboard'}
+                {(() => {
+                  for (const menu of mainMenus) {
+                    const subMenu = menu.subMenus.find(sub => sub.id === activeTab);
+                    if (subMenu) return subMenu.name;
+                  }
+                  return 'Dashboard';
+                })()}
               </h1>
               <p className="text-sm text-amber-600">Professional coffee shop management</p>
             </div>
@@ -198,7 +264,7 @@ export default function Dashboard() {
         </div>
 
         {/* Content */}
-        <main className="p-8 animate-fade-in">
+        <main className="flex-1 p-8 animate-fade-in overflow-auto">
           <div className="max-w-7xl mx-auto">
             {renderActiveTab()}
           </div>
