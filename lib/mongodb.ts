@@ -1,10 +1,12 @@
 import { MongoClient, Db } from 'mongodb';
 
-if (!process.env.MONGODB_URI) {
-  throw new Error('Please add your MongoDB URI to .env.local');
-}
+// Use local MongoDB as default if no URI is provided
+const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/coffee-shop-admin';
 
-const uri = process.env.MONGODB_URI;
+if (!process.env.MONGODB_URI) {
+  console.log('🔧 Using default local MongoDB connection:', uri);
+  console.log('💡 To use a custom MongoDB URI, set MONGODB_URI in .env.local');
+}
 const options = {};
 
 let client: MongoClient;
