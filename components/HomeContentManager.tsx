@@ -175,12 +175,28 @@ export default function HomeContentManager() {
               <textarea
                 value={getContentValue('hero', field.key)}
                 onChange={(e) => {
-                  const newContent = content.map(c => 
-                    c.section === 'hero' && c.field === field.key 
-                      ? { ...c, value: e.target.value }
-                      : c
-                  );
-                  setContent(newContent);
+                  const existingItem = content.find(c => c.section === 'hero' && c.field === field.key);
+                  
+                  if (existingItem) {
+                    // Update existing item
+                    const newContent = content.map(c => 
+                      c.section === 'hero' && c.field === field.key 
+                        ? { ...c, value: e.target.value }
+                        : c
+                    );
+                    setContent(newContent);
+                  } else {
+                    // Create new item
+                    const newItem: HomeContent = {
+                      section: 'hero',
+                      field: field.key,
+                      value: e.target.value,
+                      is_active: true,
+                      created_at: new Date(),
+                      updated_at: new Date()
+                    };
+                    setContent([...content, newItem]);
+                  }
                 }}
                 placeholder={field.placeholder}
                 className="input-field min-h-[120px] resize-none"
