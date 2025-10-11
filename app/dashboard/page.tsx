@@ -94,34 +94,34 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen coffee-gradient">
+    <div className="min-h-screen professional-gradient">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
+        <div
+          className="fixed inset-0 bg-amber-900/50 backdrop-blur-sm z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
-      {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-72 bg-white/90 backdrop-blur-md shadow-2xl transform ${
+      {/* Professional Brown Sidebar */}
+      <div className={`fixed inset-y-0 left-0 z-50 w-80 sidebar transform ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
       } transition-all duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0`}>
-        <div className="flex items-center justify-between h-20 px-6 border-b border-white/20">
+        <div className="flex items-center justify-between h-20 px-6 border-b border-amber-700/30">
           <div className="flex items-center space-x-3">
-            <div className="h-10 w-10 bg-gradient-to-br from-amber-500 to-amber-700 rounded-xl flex items-center justify-center shadow-lg">
-              <Coffee className="h-6 w-6 text-white" />
+            <div className="h-12 w-12 bg-gradient-to-br from-amber-600 to-amber-800 rounded-xl flex items-center justify-center shadow-lg">
+              <Coffee className="h-7 w-7 text-white" />
             </div>
             <div>
-              <span className="text-xl font-bold coffee-text-gradient">Coffee Admin</span>
-              <p className="text-xs text-gray-500">Management Panel</p>
+              <span className="text-xl font-bold text-white font-serif">Coffee Admin</span>
+              <p className="text-xs text-amber-200">Professional Management</p>
             </div>
           </div>
           <button
             onClick={() => setSidebarOpen(false)}
-            className="lg:hidden p-2 rounded-lg hover:bg-white/50 transition-colors"
+            className="lg:hidden p-2 rounded-lg hover:bg-amber-700/50 transition-colors"
           >
-            <X className="h-5 w-5 text-gray-600" />
+            <X className="h-5 w-5 text-amber-200" />
           </button>
         </div>
 
@@ -137,13 +137,9 @@ export default function Dashboard() {
                     setActiveTab(tab.id);
                     setSidebarOpen(false);
                   }}
-                  className={`w-full flex items-center space-x-4 px-4 py-3 rounded-xl text-left transition-all duration-200 group ${
-                    isActive
-                      ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg transform scale-105'
-                      : 'text-gray-700 hover:bg-white/50 hover:shadow-md hover:scale-105'
-                  }`}
+                  className={`w-full sidebar-item group ${isActive ? 'active' : ''}`}
                 >
-                  <Icon className={`h-5 w-5 ${isActive ? 'text-white' : 'text-gray-500 group-hover:text-amber-600'}`} />
+                  <Icon className="h-5 w-5" />
                   <span className="font-semibold">{tab.name}</span>
                 </button>
               );
@@ -151,21 +147,21 @@ export default function Dashboard() {
           </div>
         </nav>
 
-        <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-white/20">
-          <div className="flex items-center space-x-3 mb-4 p-3 bg-white/50 rounded-xl">
-            <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-amber-700 rounded-xl flex items-center justify-center shadow-lg">
+        <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-amber-700/30">
+          <div className="flex items-center space-x-3 mb-4 p-3 bg-amber-800/30 rounded-lg">
+            <div className="w-10 h-10 bg-gradient-to-br from-amber-600 to-amber-800 rounded-lg flex items-center justify-center shadow-lg">
               <span className="text-sm font-bold text-white">
                 {user.username.charAt(0).toUpperCase()}
               </span>
             </div>
             <div>
-              <p className="text-sm font-semibold text-gray-900">{user.username}</p>
-              <p className="text-xs text-gray-500 capitalize">{user.role}</p>
+              <p className="text-sm font-semibold text-white">{user.username}</p>
+              <p className="text-xs text-amber-200 capitalize">{user.role}</p>
             </div>
           </div>
           <button
             onClick={handleLogout}
-            className="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all duration-200 group"
+            className="w-full flex items-center space-x-3 px-4 py-3 text-amber-200 hover:bg-red-600/20 hover:text-red-300 rounded-lg transition-all duration-200 group"
           >
             <LogOut className="h-5 w-5 group-hover:scale-110 transition-transform" />
             <span className="font-semibold">Sign Out</span>
@@ -174,27 +170,27 @@ export default function Dashboard() {
       </div>
 
       {/* Main content */}
-      <div className="lg:ml-72">
-        {/* Top bar */}
-        <div className="bg-white/80 backdrop-blur-md shadow-lg border-b border-white/20 h-20 flex items-center justify-between px-8">
+      <div className="lg:ml-80">
+        {/* Professional Top bar */}
+        <div className="bg-white/90 backdrop-blur-md shadow-lg border-b border-amber-200 h-20 flex items-center justify-between px-8">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden p-3 rounded-xl hover:bg-white/50 transition-colors"
+            className="lg:hidden p-3 rounded-lg hover:bg-amber-100 transition-colors"
           >
-            <Menu className="h-6 w-6 text-gray-600" />
+            <Menu className="h-6 w-6 text-amber-700" />
           </button>
-          
+
           <div className="flex items-center space-x-6">
             <div>
-              <h1 className="text-2xl font-bold coffee-text-gradient">
+              <h1 className="text-2xl font-bold professional-text-gradient font-serif">
                 {tabs.find(tab => tab.id === activeTab)?.name || 'Dashboard'}
               </h1>
-              <p className="text-sm text-gray-500">Manage your coffee shop content</p>
+              <p className="text-sm text-amber-600">Professional coffee shop management</p>
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-4">
-            <div className="hidden md:flex items-center space-x-2 text-sm text-gray-600">
+            <div className="hidden md:flex items-center space-x-2 text-sm text-amber-600">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
               <span>Online</span>
             </div>
