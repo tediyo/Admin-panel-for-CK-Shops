@@ -4,10 +4,13 @@ import { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Save, X, RefreshCw } from 'lucide-react';
 
 interface CoffeeFact {
-  id: number;
+  _id?: string;
+  id?: number; // For backward compatibility
   fact: string;
   is_active: boolean;
   sort_order: number;
+  created_at?: Date;
+  updated_at?: Date;
 }
 
 export default function CoffeeFactsManager() {
@@ -47,7 +50,7 @@ export default function CoffeeFactsManager() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(editingFact ? { ...factData, id: editingFact.id } : factData),
+        body: JSON.stringify(editingFact ? { ...factData, id: editingFact._id || editingFact.id } : factData),
       });
 
       const data = await response.json();
@@ -67,10 +70,11 @@ export default function CoffeeFactsManager() {
     }
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (fact: CoffeeFact) => {
     if (!confirm('Are you sure you want to delete this fact?')) return;
 
     try {
+      const id = fact._id || fact.id;
       const response = await fetch(`/api/coffee-facts?id=${id}`, {
         method: 'DELETE',
       });
@@ -174,7 +178,7 @@ export default function CoffeeFactsManager() {
                   <Edit className="h-4 w-4" />
                 </button>
                 <button
-                  onClick={() => handleDelete(fact.id)}
+                  onClick={() => handleDelete(fact)}
                   className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"
                 >
                   <Trash2 className="h-4 w-4" />

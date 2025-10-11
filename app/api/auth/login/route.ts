@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getDatabase } from '@/lib/mongodb';
+import { User } from '@/lib/models';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import db from '@/lib/database';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-
+// POST - Login user
 export async function POST(request: NextRequest) {
   try {
     const { username, password } = await request.json();
@@ -16,8 +16,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Find user in database
-    const user = db.prepare('SELECT * FROM users WHERE username = ?').get(username);
+    const db = await getDatabase();
+    const collection = db.collection<User>('users');
+
+    // Find user by username
+    const user = await collection.findOne({ username });
 
     if (!user) {
       return NextResponse.json(
@@ -27,7 +30,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify password
-    const isValidPassword = await bcrypt.compare(password, user.password_hash);
+    const isValidPassword = await bcrypt.compare(password, user.password);
 
     if (!isValidPassword) {
       return NextResponse.json(
@@ -36,27 +39,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate JWT token
+    // Create JWT token
     const token = jwt.sign(
-      { userId: user.id, username: user.username, role: user.role },
-      JWT_SECRET,
+      { 
+        userId: user._id, 
+        username: user.username, 
+        email: user.email, 
+        role: user.role 
+      },
+      process.env.JWT_SECRET || 'fallback-secret',
       { expiresIn: '24h' }
     );
 
     return NextResponse.json({
       success: true,
+      message: 'Login successful',
       token,
       user: {
-        id: user.id,
+        id: user._id,
         username: user.username,
         email: user.email,
         role: user.role
       }
     });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Error during login:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Login failed' },
       { status: 500 }
     );
   }

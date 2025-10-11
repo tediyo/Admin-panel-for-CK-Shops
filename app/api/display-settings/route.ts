@@ -1,10 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
-import db from '@/lib/database';
+import { getDatabase } from '@/lib/mongodb';
+import { DisplaySetting } from '@/lib/models';
 
 // GET - Fetch all display settings
 export async function GET() {
   try {
-    const settings = db.prepare('SELECT * FROM display_settings ORDER BY setting_key').all();
+    const db = await getDatabase();
+    const collection = db.collection<DisplaySetting>('display_settings');
+    
+    const settings = await collection
+      .find({})
+      .sort({ setting_key: 1 })
+      .toArray();
+
     return NextResponse.json({ success: true, data: settings });
   } catch (error) {
     console.error('Error fetching display settings:', error);
@@ -15,7 +23,7 @@ export async function GET() {
   }
 }
 
-// POST - Update display settings
+// POST - Update display setting
 export async function POST(request: NextRequest) {
   try {
     const { setting_key, setting_value, description } = await request.json();
@@ -27,17 +35,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Insert or update display setting
-    const stmt = db.prepare(`
-      INSERT INTO display_settings (setting_key, setting_value, description)
-      VALUES (?, ?, ?)
-      ON CONFLICT(setting_key) DO UPDATE SET
-        setting_value = excluded.setting_value,
-        description = excluded.description,
-        updated_at = CURRENT_TIMESTAMP
-    `);
+    const db = await getDatabase();
+    const collection = db.collection<DisplaySetting>('display_settings');
 
-    stmt.run(setting_key, setting_value, description);
+    const now = new Date();
+    
+    // Upsert display setting
+    await collection.updateOne(
+      { setting_key },
+      {
+        $set: {
+          setting_key,
+          setting_value,
+          description: description || '',
+          updated_at: now
+        },
+        $setOnInsert: {
+          created_at: now
+        }
+      },
+      { upsert: true }
+    );
 
     return NextResponse.json({ success: true, message: 'Display setting updated successfully' });
   } catch (error) {

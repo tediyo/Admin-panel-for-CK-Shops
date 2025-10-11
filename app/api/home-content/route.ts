@@ -1,10 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
-import db from '@/lib/database';
+import { getDatabase } from '@/lib/mongodb';
+import { HomeContent } from '@/lib/models';
 
 // GET - Fetch all home content
 export async function GET() {
   try {
-    const content = db.prepare('SELECT * FROM home_content ORDER BY section, field').all();
+    const db = await getDatabase();
+    const collection = db.collection<HomeContent>('home_content');
+    
+    const content = await collection
+      .find({})
+      .sort({ section: 1, field: 1 })
+      .toArray();
+
     return NextResponse.json({ success: true, data: content });
   } catch (error) {
     console.error('Error fetching home content:', error);
@@ -27,17 +35,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Insert or update home content
-    const stmt = db.prepare(`
-      INSERT INTO home_content (section, field, value, is_active)
-      VALUES (?, ?, ?, ?)
-      ON CONFLICT(section, field) DO UPDATE SET
-        value = excluded.value,
-        is_active = excluded.is_active,
-        updated_at = CURRENT_TIMESTAMP
-    `);
+    const db = await getDatabase();
+    const collection = db.collection<HomeContent>('home_content');
 
-    stmt.run(section, field, value, is_active !== false ? 1 : 0);
+    const now = new Date();
+    
+    // Upsert home content
+    await collection.updateOne(
+      { section, field },
+      {
+        $set: {
+          section,
+          field,
+          value,
+          is_active: is_active !== false,
+          updated_at: now
+        },
+        $setOnInsert: {
+          created_at: now
+        }
+      },
+      { upsert: true }
+    );
 
     return NextResponse.json({ success: true, message: 'Home content updated successfully' });
   } catch (error) {

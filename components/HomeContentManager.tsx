@@ -4,11 +4,14 @@ import { useState, useEffect } from 'react';
 import { Save, RefreshCw, Home, Eye } from 'lucide-react';
 
 interface HomeContent {
-  id: number;
+  _id?: string;
+  id?: number; // For backward compatibility
   section: string;
   field: string;
   value: string;
   is_active: boolean;
+  created_at?: Date;
+  updated_at?: Date;
 }
 
 export default function HomeContentManager() {

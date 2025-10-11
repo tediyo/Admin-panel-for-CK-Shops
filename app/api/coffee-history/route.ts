@@ -1,10 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-import db from '@/lib/database';
+import { getDatabase } from '@/lib/mongodb';
+import { CoffeeHistory } from '@/lib/models';
+import { ObjectId } from 'mongodb';
 
-// GET - Fetch all coffee history items
+// GET - Fetch all coffee history
 export async function GET() {
   try {
-    const history = db.prepare('SELECT * FROM coffee_history ORDER BY sort_order, year').all();
+    const db = await getDatabase();
+    const collection = db.collection<CoffeeHistory>('coffee_history');
+    
+    const history = await collection
+      .find({})
+      .sort({ sort_order: 1, _id: 1 })
+      .toArray();
+
     return NextResponse.json({ success: true, data: history });
   } catch (error) {
     console.error('Error fetching coffee history:', error);
@@ -18,41 +27,36 @@ export async function GET() {
 // POST - Create new coffee history item
 export async function POST(request: NextRequest) {
   try {
-    const {
-      year,
-      title,
-      description,
-      image_url,
-      is_active,
-      sort_order
-    } = await request.json();
+    const { year, title, description, image_url, is_active, sort_order } = await request.json();
 
     if (!year || !title || !description) {
       return NextResponse.json(
-        { error: 'Year, title and description are required' },
+        { error: 'Year, title, and description are required' },
         { status: 400 }
       );
     }
 
-    const stmt = db.prepare(`
-      INSERT INTO coffee_history (
-        year, title, description, image_url, is_active, sort_order
-      ) VALUES (?, ?, ?, ?, ?, ?)
-    `);
+    const db = await getDatabase();
+    const collection = db.collection<CoffeeHistory>('coffee_history');
 
-    const result = stmt.run(
+    const now = new Date();
+    const newItem: Omit<CoffeeHistory, '_id'> = {
       year,
       title,
       description,
-      image_url || null,
-      is_active !== false,
-      sort_order || 0
-    );
+      image_url: image_url || '',
+      is_active: is_active !== false,
+      sort_order: sort_order || 0,
+      created_at: now,
+      updated_at: now
+    };
 
-    return NextResponse.json({
-      success: true,
+    const result = await collection.insertOne(newItem);
+
+    return NextResponse.json({ 
+      success: true, 
       message: 'Coffee history item created successfully',
-      id: result.lastInsertRowid
+      id: result.insertedId
     });
   } catch (error) {
     console.error('Error creating coffee history item:', error);
@@ -66,38 +70,31 @@ export async function POST(request: NextRequest) {
 // PUT - Update coffee history item
 export async function PUT(request: NextRequest) {
   try {
-    const {
-      id,
-      year,
-      title,
-      description,
-      image_url,
-      is_active,
-      sort_order
-    } = await request.json();
+    const { id, year, title, description, image_url, is_active, sort_order } = await request.json();
 
     if (!id || !year || !title || !description) {
       return NextResponse.json(
-        { error: 'ID, year, title and description are required' },
+        { error: 'ID, year, title, and description are required' },
         { status: 400 }
       );
     }
 
-    const stmt = db.prepare(`
-      UPDATE coffee_history SET
-        year = ?, title = ?, description = ?, image_url = ?,
-        is_active = ?, sort_order = ?, updated_at = CURRENT_TIMESTAMP
-      WHERE id = ?
-    `);
+    const db = await getDatabase();
+    const collection = db.collection<CoffeeHistory>('coffee_history');
 
-    stmt.run(
-      year,
-      title,
-      description,
-      image_url || null,
-      is_active !== false,
-      sort_order || 0,
-      id
+    await collection.updateOne(
+      { _id: new ObjectId(id) },
+      {
+        $set: {
+          year,
+          title,
+          description,
+          image_url: image_url || '',
+          is_active: is_active !== false,
+          sort_order: sort_order || 0,
+          updated_at: new Date()
+        }
+      }
     );
 
     return NextResponse.json({ success: true, message: 'Coffee history item updated successfully' });
@@ -123,8 +120,10 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const stmt = db.prepare('DELETE FROM coffee_history WHERE id = ?');
-    stmt.run(id);
+    const db = await getDatabase();
+    const collection = db.collection<CoffeeHistory>('coffee_history');
+
+    await collection.deleteOne({ _id: new ObjectId(id) });
 
     return NextResponse.json({ success: true, message: 'Coffee history item deleted successfully' });
   } catch (error) {
