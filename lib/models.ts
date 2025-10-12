@@ -55,6 +55,37 @@ export interface DisplaySetting {
   updated_at: Date;
 }
 
+export interface MenuItem {
+  _id?: string;
+  id?: number; // For backward compatibility
+  name: string;
+  description: string;
+  price: number;
+  category: string;
+  rating: number;
+  image: string;
+  isPopular?: boolean;
+  isNew?: boolean;
+  prepTime?: number;
+  calories?: number;
+  isVegan?: boolean;
+  isGlutenFree?: boolean;
+  is_active: boolean;
+  sort_order: number;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface MenuCategory {
+  _id?: string;
+  name: string;
+  description?: string;
+  sort_order: number;
+  is_active: boolean;
+  created_at: Date;
+  updated_at: Date;
+}
+
 export interface User {
   _id?: string;
   username: string;
