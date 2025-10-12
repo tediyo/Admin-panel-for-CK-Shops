@@ -86,6 +86,24 @@ export interface MenuCategory {
   updated_at: Date;
 }
 
+export interface SignatureDrink {
+  _id?: string;
+  id?: number; // For backward compatibility
+  name: string;
+  span: string;
+  image: string;
+  ingredients: string[];
+  price: number;
+  rating: number;
+  prepTime: number;
+  description: string;
+  category: string;
+  is_active: boolean;
+  sort_order: number;
+  created_at: Date;
+  updated_at: Date;
+}
+
 export interface User {
   _id?: string;
   username: string;

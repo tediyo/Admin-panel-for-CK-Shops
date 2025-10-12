@@ -22,6 +22,7 @@ import HighlightCardsManager from '@/components/HighlightCardsManager';
 import CoffeeHistoryManager from '@/components/CoffeeHistoryManager';
 import CoffeeFactsManager from '@/components/CoffeeFactsManager';
 import MenuManager from '@/components/MenuManager';
+import SignatureDrinksManager from '@/components/SignatureDrinksManager';
 
 interface User {
   id: number;
@@ -84,6 +85,7 @@ export default function Dashboard() {
       icon: Coffee,
       subMenus: [
         { id: 'menu-items', name: 'Menu Items', icon: Coffee },
+        { id: 'signature-drinks', name: 'Signature Drinks', icon: Star },
       ]
     },
   ];
@@ -102,6 +104,8 @@ export default function Dashboard() {
         return <CoffeeFactsManager />;
       case 'menu-items':
         return <MenuManager />;
+      case 'signature-drinks':
+        return <SignatureDrinksManager />;
       default:
         return <HomeContentManager />;
     }
