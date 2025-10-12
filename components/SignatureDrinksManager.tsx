@@ -72,12 +72,18 @@ export default function SignatureDrinksManager() {
   const handleSaveDrink = async () => {
     setSaving(true);
     try {
+      // Clean up empty image URL
+      const cleanedForm = {
+        ...drinkForm,
+        image: drinkForm.image.trim() === '' ? '' : drinkForm.image
+      };
+
       const response = await fetch('/api/signature-drinks', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(editingDrink ? { ...drinkForm, _id: editingDrink._id } : drinkForm),
+        body: JSON.stringify(editingDrink ? { ...cleanedForm, _id: editingDrink._id } : cleanedForm),
       });
 
       const data = await response.json();
@@ -328,11 +334,17 @@ export default function SignatureDrinksManager() {
           {filteredDrinks.map((drink) => (
             <div key={drink._id} className="bg-white rounded-xl border border-gray-200 hover:border-amber-300 transition-all duration-300 overflow-hidden group">
               <div className="relative h-48 bg-gradient-to-br from-amber-100 to-orange-100">
-                <img
-                  src={drink.image}
-                  alt={drink.name}
-                  className="w-full h-full object-cover"
-                />
+                {drink.image && drink.image.trim() !== '' ? (
+                  <img
+                    src={drink.image}
+                    alt={drink.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-amber-200 to-orange-200">
+                    <Coffee className="h-16 w-16 text-amber-600" />
+                  </div>
+                )}
                 <div className="absolute top-3 right-3 flex space-x-2">
                   <button
                     onClick={() => startEditDrink(drink)}
@@ -489,6 +501,9 @@ export default function SignatureDrinksManager() {
                     className="input-field"
                     placeholder="https://example.com/image.jpg"
                   />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Leave empty to use default coffee icon
+                  </p>
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Sort Order</label>
