@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/mongodb';
 import { MenuItem } from '@/lib/models';
+import { ObjectId } from 'mongodb';
 
 // GET - Fetch all menu items
 export async function GET() {
@@ -42,8 +43,16 @@ export async function POST(request: NextRequest) {
     
     // If updating existing item
     if (itemData._id) {
+      // Validate ObjectId format
+      if (!ObjectId.isValid(itemData._id)) {
+        return NextResponse.json(
+          { error: 'Invalid item ID format' },
+          { status: 400 }
+        );
+      }
+
       const result = await collection.updateOne(
-        { _id: itemData._id },
+        { _id: new ObjectId(itemData._id) },
         {
           $set: {
             ...itemData,
@@ -103,10 +112,18 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
+    // Validate ObjectId format
+    if (!ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { error: 'Invalid item ID format' },
+        { status: 400 }
+      );
+    }
+
     const db = await getDatabase();
     const collection = db.collection<MenuItem>('menu_items');
 
-    const result = await collection.deleteOne({ _id: id });
+    const result = await collection.deleteOne({ _id: new ObjectId(id) });
 
     if (result.deletedCount === 0) {
       return NextResponse.json(
