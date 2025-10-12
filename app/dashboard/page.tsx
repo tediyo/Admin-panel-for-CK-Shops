@@ -21,6 +21,8 @@ import DisplaySettingsManager from '@/components/DisplaySettingsManager';
 import HighlightCardsManager from '@/components/HighlightCardsManager';
 import CoffeeHistoryManager from '@/components/CoffeeHistoryManager';
 import CoffeeFactsManager from '@/components/CoffeeFactsManager';
+import MenuManager from '@/components/MenuManager';
+import SignatureDrinksManager from '@/components/SignatureDrinksManager';
 
 interface User {
   id: number;
@@ -62,7 +64,7 @@ export default function Dashboard() {
     router.push('/');
   };
 
-  const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set(['home']));
+  const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set(['home', 'menu']));
 
   const mainMenus = [
     {
@@ -77,16 +79,15 @@ export default function Dashboard() {
         { id: 'display-settings', name: 'Display Settings', icon: Settings },
       ]
     },
-    // Future main menus can be added here
-    // {
-    //   id: 'products',
-    //   name: 'Products',
-    //   icon: Package,
-    //   subMenus: [
-    //     { id: 'menu-items', name: 'Menu Items', icon: Coffee },
-    //     { id: 'categories', name: 'Categories', icon: Folder },
-    //   ]
-    // },
+    {
+      id: 'menu',
+      name: 'Menu Management',
+      icon: Coffee,
+      subMenus: [
+        { id: 'menu-items', name: 'Menu Items', icon: Coffee },
+        { id: 'signature-drinks', name: 'Signature Drinks', icon: Star },
+      ]
+    },
   ];
 
   const renderActiveTab = () => {
@@ -101,6 +102,10 @@ export default function Dashboard() {
         return <CoffeeHistoryManager />;
       case 'coffee-facts':
         return <CoffeeFactsManager />;
+      case 'menu-items':
+        return <MenuManager />;
+      case 'signature-drinks':
+        return <SignatureDrinksManager />;
       default:
         return <HomeContentManager />;
     }
