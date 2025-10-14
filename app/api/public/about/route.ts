@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/mongodb';
-import { AboutValue, AboutMilestone, AboutFAQ, AboutContent } from '@/lib/models';
+import { AboutValue, AboutMilestone, AboutFAQ, AboutContent, AboutSectionSettings } from '@/lib/models';
 
 // GET - Fetch all active about content for public consumption
 export async function GET() {
@@ -8,7 +8,7 @@ export async function GET() {
     const db = await getDatabase();
     
     // Fetch all about data in parallel
-    const [values, milestones, faqs, content] = await Promise.all([
+    const [values, milestones, faqs, content, sectionSettings] = await Promise.all([
       db.collection<AboutValue>('about_values')
         .find({ is_active: true })
         .sort({ sort_order: 1, title: 1 })
@@ -27,6 +27,11 @@ export async function GET() {
       db.collection<AboutContent>('about_content')
         .find({ is_active: true })
         .sort({ section: 1, field: 1 })
+        .toArray(),
+      
+      db.collection<AboutSectionSettings>('about_section_settings')
+        .find({})
+        .sort({ sort_order: 1, section: 1 })
         .toArray()
     ]);
 
@@ -39,13 +44,20 @@ export async function GET() {
       organizedContent[item.section][item.field] = item.value;
     });
 
+    // Organize section settings by section name
+    const sectionVisibility: { [section: string]: boolean } = {};
+    sectionSettings.forEach(setting => {
+      sectionVisibility[setting.section] = setting.is_visible;
+    });
+
     return NextResponse.json({
       success: true,
       data: {
         values,
         milestones,
         faqs,
-        content: organizedContent
+        content: organizedContent,
+        sectionVisibility
       }
     });
   } catch (error) {

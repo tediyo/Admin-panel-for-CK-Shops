@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/mongodb';
-import { AboutValue, AboutMilestone, AboutFAQ, AboutContent } from '@/lib/models';
+import { AboutValue, AboutMilestone, AboutFAQ, AboutContent, AboutSectionSettings } from '@/lib/models';
 
 // POST - Initialize about section with sample data
 export async function POST() {
@@ -278,19 +278,67 @@ export async function POST() {
       }
     ];
 
+    // Sample section settings
+    const sampleSectionSettings: Omit<AboutSectionSettings, '_id'>[] = [
+      {
+        section: 'hero',
+        is_visible: true,
+        sort_order: 1,
+        created_at: now,
+        updated_at: now
+      },
+      {
+        section: 'story',
+        is_visible: true,
+        sort_order: 2,
+        created_at: now,
+        updated_at: now
+      },
+      {
+        section: 'mission',
+        is_visible: true,
+        sort_order: 3,
+        created_at: now,
+        updated_at: now
+      },
+      {
+        section: 'values',
+        is_visible: true,
+        sort_order: 4,
+        created_at: now,
+        updated_at: now
+      },
+      {
+        section: 'timeline',
+        is_visible: true,
+        sort_order: 5,
+        created_at: now,
+        updated_at: now
+      },
+      {
+        section: 'faq',
+        is_visible: true,
+        sort_order: 6,
+        created_at: now,
+        updated_at: now
+      }
+    ];
+
     // Clear existing data and insert sample data
     await Promise.all([
       db.collection('about_values').deleteMany({}),
       db.collection('about_milestones').deleteMany({}),
       db.collection('about_faqs').deleteMany({}),
-      db.collection('about_content').deleteMany({})
+      db.collection('about_content').deleteMany({}),
+      db.collection('about_section_settings').deleteMany({})
     ]);
 
     await Promise.all([
       db.collection('about_values').insertMany(sampleValues),
       db.collection('about_milestones').insertMany(sampleMilestones),
       db.collection('about_faqs').insertMany(sampleFAQs),
-      db.collection('about_content').insertMany(sampleContent)
+      db.collection('about_content').insertMany(sampleContent),
+      db.collection('about_section_settings').insertMany(sampleSectionSettings)
     ]);
 
     return NextResponse.json({
@@ -300,7 +348,8 @@ export async function POST() {
         values: sampleValues.length,
         milestones: sampleMilestones.length,
         faqs: sampleFAQs.length,
-        content: sampleContent.length
+        content: sampleContent.length,
+        sectionSettings: sampleSectionSettings.length
       }
     });
   } catch (error) {

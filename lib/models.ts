@@ -157,6 +157,16 @@ export interface AboutContent {
   updated_at: Date;
 }
 
+export interface AboutSectionSettings {
+  _id?: string;
+  id?: number;
+  section: string; // 'hero', 'story', 'mission', 'values', 'timeline', 'faq'
+  is_visible: boolean;
+  sort_order: number;
+  created_at: Date;
+  updated_at: Date;
+}
+
 export interface User {
   _id?: string;
   username: string;

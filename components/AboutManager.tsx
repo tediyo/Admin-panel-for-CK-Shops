@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { AboutValue, AboutMilestone, AboutFAQ, AboutContent } from '@/lib/models';
+import { AboutValue, AboutMilestone, AboutFAQ, AboutContent, AboutSectionSettings } from '@/lib/models';
 import { 
   Plus, 
   Edit, 
@@ -43,11 +43,12 @@ const colorOptions = [
 const faqCategories = ['Delivery', 'Reservations', 'Amenities', 'Policies', 'Catering', 'Hours', 'Dietary', 'Sustainability'];
 
 export default function AboutManager() {
-  const [activeTab, setActiveTab] = useState<'values' | 'milestones' | 'faqs' | 'content'>('values');
+  const [activeTab, setActiveTab] = useState<'values' | 'milestones' | 'faqs' | 'content' | 'settings'>('values');
   const [values, setValues] = useState<AboutValue[]>([]);
   const [milestones, setMilestones] = useState<AboutMilestone[]>([]);
   const [faqs, setFaqs] = useState<AboutFAQ[]>([]);
   const [content, setContent] = useState<AboutContent[]>([]);
+  const [sectionSettings, setSectionSettings] = useState<AboutSectionSettings[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingItem, setEditingItem] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -65,24 +66,27 @@ export default function AboutManager() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [valuesRes, milestonesRes, faqsRes, contentRes] = await Promise.all([
+      const [valuesRes, milestonesRes, faqsRes, contentRes, settingsRes] = await Promise.all([
         fetch('/api/about-values'),
         fetch('/api/about-milestones'),
         fetch('/api/about-faqs'),
-        fetch('/api/about-content')
+        fetch('/api/about-content'),
+        fetch('/api/about-section-settings')
       ]);
 
-      const [valuesData, milestonesData, faqsData, contentData] = await Promise.all([
+      const [valuesData, milestonesData, faqsData, contentData, settingsData] = await Promise.all([
         valuesRes.json(),
         milestonesRes.json(),
         faqsRes.json(),
-        contentRes.json()
+        contentRes.json(),
+        settingsRes.json()
       ]);
 
       setValues(valuesData.data || []);
       setMilestones(milestonesData.data || []);
       setFaqs(faqsData.data || []);
       setContent(contentData.data || []);
+      setSectionSettings(settingsData.data || []);
     } catch (error) {
       console.error('Error fetching about data:', error);
     } finally {
@@ -173,6 +177,32 @@ export default function AboutManager() {
     } catch (error) {
       console.error('Error initializing sample data:', error);
       alert('Failed to initialize sample data');
+    }
+  };
+
+  const toggleSectionVisibility = async (section: string, isVisible: boolean) => {
+    try {
+      const response = await fetch('/api/about-section-settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          settings: [{
+            section,
+            is_visible: isVisible,
+            sort_order: sectionSettings.find(s => s.section === section)?.sort_order || 0
+          }]
+        })
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        await fetchData();
+      } else {
+        alert(result.error || 'Failed to update section visibility');
+      }
+    } catch (error) {
+      console.error('Error updating section visibility:', error);
+      alert('Failed to update section visibility');
     }
   };
 
@@ -363,6 +393,74 @@ export default function AboutManager() {
       </div>
     </div>
   );
+
+  const renderSettings = () => {
+    const sections = [
+      { key: 'hero', name: 'Hero Section', description: 'Main banner with title and subtitle' },
+      { key: 'story', name: 'Story Section', description: 'Company story and journey' },
+      { key: 'mission', name: 'Mission Section', description: 'Company mission statement' },
+      { key: 'values', name: 'Values Section', description: 'Company values and principles' },
+      { key: 'timeline', name: 'Timeline Section', description: 'Company milestones and history' },
+      { key: 'faq', name: 'FAQ Section', description: 'Frequently asked questions' }
+    ];
+
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h3 className="text-xl font-semibold">Section Visibility</h3>
+          <p className="text-gray-600">Toggle sections on/off for the about page</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {sections.map((section) => {
+            const setting = sectionSettings.find(s => s.section === section.key);
+            const isVisible = setting?.is_visible ?? true;
+            
+            return (
+              <div key={section.key} className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-shadow">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <h4 className="text-lg font-semibold text-gray-800 mb-2">{section.name}</h4>
+                    <p className="text-gray-600 text-sm">{section.description}</p>
+                  </div>
+                  <div className="ml-4">
+                    <button
+                      onClick={() => toggleSectionVisibility(section.key, !isVisible)}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        isVisible ? 'bg-green-600' : 'bg-gray-200'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          isVisible ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                </div>
+                <div className="mt-4 flex items-center space-x-2">
+                  <div className={`w-2 h-2 rounded-full ${isVisible ? 'bg-green-500' : 'bg-gray-400'}`} />
+                  <span className={`text-sm font-medium ${isVisible ? 'text-green-600' : 'text-gray-500'}`}>
+                    {isVisible ? 'Visible on about page' : 'Hidden from about page'}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
+          <h4 className="text-lg font-semibold text-blue-800 mb-2">💡 Section Visibility Tips</h4>
+          <ul className="text-blue-700 text-sm space-y-1">
+            <li>• Toggle sections on/off to customize what visitors see</li>
+            <li>• Hidden sections won't appear on the about page</li>
+            <li>• Changes take effect immediately on the frontend</li>
+            <li>• You can always re-enable sections later</li>
+          </ul>
+        </div>
+      </div>
+    );
+  };
 
   const renderForm = () => {
     if (!showForm) return null;
@@ -683,7 +781,8 @@ export default function AboutManager() {
             { id: 'values', label: 'Values', count: values.length },
             { id: 'milestones', label: 'Milestones', count: milestones.length },
             { id: 'faqs', label: 'FAQs', count: faqs.length },
-            { id: 'content', label: 'Content', count: content.length }
+            { id: 'content', label: 'Content', count: content.length },
+            { id: 'settings', label: 'Visibility', count: sectionSettings.length }
           ].map((tab) => (
             <button
               key={tab.id}
@@ -705,6 +804,7 @@ export default function AboutManager() {
       {activeTab === 'milestones' && renderMilestones()}
       {activeTab === 'faqs' && renderFAQs()}
       {activeTab === 'content' && renderContent()}
+      {activeTab === 'settings' && renderSettings()}
 
       {/* Form Modal */}
       {renderForm()}

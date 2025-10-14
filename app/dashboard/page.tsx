@@ -144,7 +144,7 @@ export default function Dashboard() {
       {/* Professional Brown Sidebar */}
       <div className={`fixed inset-y-0 left-0 z-50 w-80 sidebar transform ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      } transition-all duration-300 ease-in-out lg:translate-x-0 lg:static lg:block`}>
+      } transition-all duration-300 ease-in-out lg:translate-x-0 lg:static lg:block flex flex-col`}>
         <div className="flex items-center justify-between h-20 px-6 border-b border-amber-700/30">
           <div className="flex items-center space-x-3">
             <div className="h-12 w-12 bg-gradient-to-br from-amber-600 to-amber-800 rounded-xl flex items-center justify-center shadow-lg">
@@ -163,15 +163,15 @@ export default function Dashboard() {
           </button>
         </div>
 
-        <nav className="mt-8 px-4">
-          <div className="space-y-1">
+        <nav className="mt-8 px-4 flex-1 overflow-y-auto custom-scrollbar">
+          <div className="space-y-2">
             {mainMenus.map((menu) => {
               const Icon = menu.icon;
               const isExpanded = expandedMenus.has(menu.id);
               const hasActiveSubMenu = menu.subMenus.some(subMenu => activeTab === subMenu.id);
               
               return (
-                <div key={menu.id} className="space-y-1">
+                <div key={menu.id} className="space-y-1 mb-4">
                   {/* Main Menu Item */}
                   <button
                     onClick={() => {
@@ -198,7 +198,7 @@ export default function Dashboard() {
                   
                   {/* Sub Menu Items */}
                   {isExpanded && (
-                    <div className="ml-4 space-y-1">
+                    <div className="ml-4 space-y-1 mt-2">
                       {menu.subMenus.map((subMenu) => {
                         const SubIcon = subMenu.icon;
                         const isActive = activeTab === subMenu.id;
