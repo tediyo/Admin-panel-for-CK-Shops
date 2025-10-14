@@ -14,7 +14,8 @@ import {
   Menu,
   X,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  FileText
 } from 'lucide-react';
 import HomeContentManager from '@/components/HomeContentManager';
 import DisplaySettingsManager from '@/components/DisplaySettingsManager';
@@ -23,6 +24,7 @@ import CoffeeHistoryManager from '@/components/CoffeeHistoryManager';
 import CoffeeFactsManager from '@/components/CoffeeFactsManager';
 import MenuManager from '@/components/MenuManager';
 import SignatureDrinksManager from '@/components/SignatureDrinksManager';
+import AboutManager from '@/components/AboutManager';
 
 interface User {
   id: number;
@@ -64,7 +66,7 @@ export default function Dashboard() {
     router.push('/');
   };
 
-  const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set(['home', 'menu']));
+  const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set(['home', 'menu', 'about']));
 
   const mainMenus = [
     {
@@ -88,6 +90,14 @@ export default function Dashboard() {
         { id: 'signature-drinks', name: 'Signature Drinks', icon: Star },
       ]
     },
+    {
+      id: 'about',
+      name: 'About Section',
+      icon: FileText,
+      subMenus: [
+        { id: 'about-content', name: 'About Content', icon: FileText },
+      ]
+    },
   ];
 
   const renderActiveTab = () => {
@@ -106,6 +116,8 @@ export default function Dashboard() {
         return <MenuManager />;
       case 'signature-drinks':
         return <SignatureDrinksManager />;
+      case 'about-content':
+        return <AboutManager />;
       default:
         return <HomeContentManager />;
     }
