@@ -167,6 +167,49 @@ export interface AboutSectionSettings {
   updated_at: Date;
 }
 
+export interface Branch {
+  _id?: string;
+  id?: number;
+  name: string;
+  address: string;
+  phone: string;
+  email: string;
+  hours: string;
+  coordinates: {
+    lat: number;
+    lng: number;
+  };
+  image: string;
+  description?: string;
+  amenities?: string[]; // WiFi, Parking, Outdoor Seating, etc.
+  is_main_branch?: boolean;
+  is_active: boolean;
+  sort_order: number;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface ContactContent {
+  _id?: string;
+  id?: number;
+  section: string; // 'hero', 'form', 'map', etc.
+  field: string; // 'title', 'subtitle', 'description', etc.
+  value: string;
+  is_active: boolean;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface ContactSectionSettings {
+  _id?: string;
+  id?: number;
+  section: string; // 'hero', 'branches', 'form', 'map'
+  is_visible: boolean;
+  sort_order: number;
+  created_at: Date;
+  updated_at: Date;
+}
+
 export interface User {
   _id?: string;
   username: string;
