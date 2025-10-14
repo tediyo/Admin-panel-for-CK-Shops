@@ -15,7 +15,8 @@ import {
   X,
   ChevronDown,
   ChevronRight,
-  FileText
+  FileText,
+  MapPin
 } from 'lucide-react';
 import HomeContentManager from '@/components/HomeContentManager';
 import DisplaySettingsManager from '@/components/DisplaySettingsManager';
@@ -25,6 +26,7 @@ import CoffeeFactsManager from '@/components/CoffeeFactsManager';
 import MenuManager from '@/components/MenuManager';
 import SignatureDrinksManager from '@/components/SignatureDrinksManager';
 import AboutManager from '@/components/AboutManager';
+import ContactManager from '@/components/ContactManager';
 
 interface User {
   id: number;
@@ -66,7 +68,7 @@ export default function Dashboard() {
     router.push('/');
   };
 
-  const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set(['home', 'menu', 'about']));
+  const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set(['home', 'menu', 'about', 'contact']));
 
   const mainMenus = [
     {
@@ -98,6 +100,14 @@ export default function Dashboard() {
         { id: 'about-content', name: 'About Content', icon: FileText },
       ]
     },
+    {
+      id: 'contact',
+      name: 'Contact Section',
+      icon: MapPin,
+      subMenus: [
+        { id: 'contact-content', name: 'Contact Content', icon: MapPin },
+      ]
+    },
   ];
 
   const renderActiveTab = () => {
@@ -118,6 +128,8 @@ export default function Dashboard() {
         return <SignatureDrinksManager />;
       case 'about-content':
         return <AboutManager />;
+      case 'contact-content':
+        return <ContactManager />;
       default:
         return <HomeContentManager />;
     }
