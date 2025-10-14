@@ -104,6 +104,69 @@ export interface SignatureDrink {
   updated_at: Date;
 }
 
+export interface AboutValue {
+  _id?: string;
+  id?: number;
+  title: string;
+  description: string;
+  icon: string; // Icon name from Lucide React
+  color: string; // Gradient color classes
+  bgColor: string; // Background gradient classes
+  image?: string; // Optional background image
+  is_active: boolean;
+  sort_order: number;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface AboutMilestone {
+  _id?: string;
+  id?: number;
+  year: string;
+  title: string;
+  description: string;
+  is_active: boolean;
+  sort_order: number;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface AboutFAQ {
+  _id?: string;
+  id?: number;
+  question: string;
+  answer: string;
+  category: string;
+  icon: string; // Icon name from Lucide React
+  helpful: number;
+  tags: string[];
+  is_active: boolean;
+  sort_order: number;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface AboutContent {
+  _id?: string;
+  id?: number;
+  section: string; // 'hero', 'story', 'mission', etc.
+  field: string; // 'title', 'subtitle', 'description', etc.
+  value: string;
+  is_active: boolean;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface AboutSectionSettings {
+  _id?: string;
+  id?: number;
+  section: string; // 'hero', 'story', 'mission', 'values', 'timeline', 'faq'
+  is_visible: boolean;
+  sort_order: number;
+  created_at: Date;
+  updated_at: Date;
+}
+
 export interface User {
   _id?: string;
   username: string;

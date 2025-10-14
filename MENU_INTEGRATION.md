@@ -150,3 +150,5 @@ interface MenuCategory {
 - Make sure both servers are running for full integration
 - The public API endpoint doesn't require authentication
 - All admin endpoints require authentication
+
+

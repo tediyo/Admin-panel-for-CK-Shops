@@ -1,61 +1,61 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/mongodb';
-import { SignatureDrink } from '@/lib/models';
+import { AboutValue } from '@/lib/models';
 import { ObjectId } from 'mongodb';
 
-// GET - Fetch all signature drinks
+// GET - Fetch all about values
 export async function GET() {
   try {
     const db = await getDatabase();
-    const collection = db.collection<SignatureDrink>('signature_drinks');
+    const collection = db.collection<AboutValue>('about_values');
     
-    const drinks = await collection
+    const values = await collection
       .find({})
-      .sort({ sort_order: 1, category: 1, name: 1 })
+      .sort({ sort_order: 1, title: 1 })
       .toArray();
 
-    return NextResponse.json({ success: true, data: drinks });
+    return NextResponse.json({ success: true, data: values });
   } catch (error) {
-    console.error('Error fetching signature drinks:', error);
+    console.error('Error fetching about values:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch signature drinks' },
+      { error: 'Failed to fetch about values' },
       { status: 500 }
     );
   }
 }
 
-// POST - Create or update signature drink
+// POST - Create or update about value
 export async function POST(request: NextRequest) {
   try {
-    const drinkData = await request.json();
+    const valueData = await request.json();
 
-    if (!drinkData.name || !drinkData.span || !drinkData.description || drinkData.price === undefined) {
+    if (!valueData.title || !valueData.description || !valueData.icon) {
       return NextResponse.json(
-        { error: 'Name, span, description, and price are required' },
+        { error: 'Title, description, and icon are required' },
         { status: 400 }
       );
     }
 
     const db = await getDatabase();
-    const collection = db.collection<SignatureDrink>('signature_drinks');
+    const collection = db.collection<AboutValue>('about_values');
 
     const now = new Date();
     
-    // If updating existing drink
-    if (drinkData._id) {
+    // If updating existing value
+    if (valueData._id) {
       // Validate ObjectId format
-      if (!ObjectId.isValid(drinkData._id)) {
+      if (!ObjectId.isValid(valueData._id)) {
         return NextResponse.json(
-          { error: 'Invalid drink ID format' },
+          { error: 'Invalid value ID format' },
           { status: 400 }
         );
       }
 
       const result = await collection.updateOne(
-        { _id: new ObjectId(drinkData._id) },
+        { _id: new ObjectId(valueData._id) },
         {
           $set: {
-            ...drinkData,
+            ...valueData,
             updated_at: now
           }
         }
@@ -63,44 +63,43 @@ export async function POST(request: NextRequest) {
 
       if (result.matchedCount === 0) {
         return NextResponse.json(
-          { error: 'Signature drink not found' },
+          { error: 'About value not found' },
           { status: 404 }
         );
       }
 
       return NextResponse.json({ 
         success: true, 
-        message: 'Signature drink updated successfully' 
+        message: 'About value updated successfully' 
       });
     } else {
-      // Create new drink
-      const newDrink: SignatureDrink = {
-        ...drinkData,
-        ingredients: drinkData.ingredients || [],
-        is_active: drinkData.is_active !== false,
-        sort_order: drinkData.sort_order || 0,
+      // Create new value
+      const newValue: AboutValue = {
+        ...valueData,
+        is_active: valueData.is_active !== false,
+        sort_order: valueData.sort_order || 0,
         created_at: now,
         updated_at: now
       };
 
-      const result = await collection.insertOne(newDrink);
+      const result = await collection.insertOne(newValue);
       
       return NextResponse.json({ 
         success: true, 
-        message: 'Signature drink created successfully',
+        message: 'About value created successfully',
         data: { _id: result.insertedId }
       });
     }
   } catch (error) {
-    console.error('Error saving signature drink:', error);
+    console.error('Error saving about value:', error);
     return NextResponse.json(
-      { error: 'Failed to save signature drink' },
+      { error: 'Failed to save about value' },
       { status: 500 }
     );
   }
 }
 
-// DELETE - Delete signature drink
+// DELETE - Delete about value
 export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -108,7 +107,7 @@ export async function DELETE(request: NextRequest) {
 
     if (!id) {
       return NextResponse.json(
-        { error: 'Drink ID is required' },
+        { error: 'Value ID is required' },
         { status: 400 }
       );
     }
@@ -116,34 +115,32 @@ export async function DELETE(request: NextRequest) {
     // Validate ObjectId format
     if (!ObjectId.isValid(id)) {
       return NextResponse.json(
-        { error: 'Invalid drink ID format' },
+        { error: 'Invalid value ID format' },
         { status: 400 }
       );
     }
 
     const db = await getDatabase();
-    const collection = db.collection<SignatureDrink>('signature_drinks');
+    const collection = db.collection<AboutValue>('about_values');
 
     const result = await collection.deleteOne({ _id: new ObjectId(id) });
 
     if (result.deletedCount === 0) {
       return NextResponse.json(
-        { error: 'Signature drink not found' },
+        { error: 'About value not found' },
         { status: 404 }
       );
     }
 
     return NextResponse.json({ 
       success: true, 
-      message: 'Signature drink deleted successfully' 
+      message: 'About value deleted successfully' 
     });
   } catch (error) {
-    console.error('Error deleting signature drink:', error);
+    console.error('Error deleting about value:', error);
     return NextResponse.json(
-      { error: 'Failed to delete signature drink' },
+      { error: 'Failed to delete about value' },
       { status: 500 }
     );
   }
 }
-
-
