@@ -1,43 +1,43 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/mongodb';
-import { ContactSectionSettings } from '@/lib/models';
+import { OrderSettings } from '@/lib/models';
 import { ObjectId } from 'mongodb';
 
-// GET - Fetch all contact section settings
+// GET - Fetch all order settings
 export async function GET() {
   try {
     const db = await getDatabase();
-    const collection = db.collection<ContactSectionSettings>('contact_section_settings');
+    const collection = db.collection<OrderSettings>('order_settings');
     
     const settings = await collection
-      .find({})
-      .sort({ sort_order: 1, section: 1 })
+      .find({ is_active: true })
+      .sort({ setting: 1 })
       .toArray();
 
     return NextResponse.json({ success: true, data: settings });
   } catch (error) {
-    console.error('Error fetching contact section settings:', error);
+    console.error('Error fetching order settings:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch contact section settings' },
+      { error: 'Failed to fetch order settings' },
       { status: 500 }
     );
   }
 }
 
-// POST - Create or update contact section settings
+// POST - Create or update order settings
 export async function POST(request: NextRequest) {
   try {
     const settingsData = await request.json();
 
-    if (!settingsData.section || settingsData.is_visible === undefined) {
+    if (!settingsData.setting || settingsData.value === undefined) {
       return NextResponse.json(
-        { error: 'Section and is_visible are required' },
+        { error: 'Setting and value are required' },
         { status: 400 }
       );
     }
 
     const db = await getDatabase();
-    const collection = db.collection<ContactSectionSettings>('contact_section_settings');
+    const collection = db.collection<OrderSettings>('order_settings');
 
     const now = new Date();
     
@@ -63,20 +63,20 @@ export async function POST(request: NextRequest) {
 
       if (result.matchedCount === 0) {
         return NextResponse.json(
-          { error: 'Contact section setting not found' },
+          { error: 'Order setting not found' },
           { status: 404 }
         );
       }
 
       return NextResponse.json({ 
         success: true, 
-        message: 'Contact section setting updated successfully' 
+        message: 'Order setting updated successfully' 
       });
     } else {
       // Create new setting
-      const newSetting: ContactSectionSettings = {
+      const newSetting: OrderSettings = {
         ...settingsData,
-        sort_order: settingsData.sort_order || 0,
+        is_active: settingsData.is_active !== false,
         created_at: now,
         updated_at: now
       };
@@ -85,20 +85,20 @@ export async function POST(request: NextRequest) {
       
       return NextResponse.json({ 
         success: true, 
-        message: 'Contact section setting created successfully',
+        message: 'Order setting created successfully',
         data: { _id: result.insertedId }
       });
     }
   } catch (error) {
-    console.error('Error saving contact section setting:', error);
+    console.error('Error saving order setting:', error);
     return NextResponse.json(
-      { error: 'Failed to save contact section setting' },
+      { error: 'Failed to save order setting' },
       { status: 500 }
     );
   }
 }
 
-// PUT - Bulk update contact section settings
+// PUT - Bulk update order settings
 export async function PUT(request: NextRequest) {
   try {
     const { settings } = await request.json();
@@ -111,16 +111,17 @@ export async function PUT(request: NextRequest) {
     }
 
     const db = await getDatabase();
-    const collection = db.collection<ContactSectionSettings>('contact_section_settings');
+    const collection = db.collection<OrderSettings>('order_settings');
 
     const now = new Date();
     const bulkOps = settings.map(setting => ({
       updateOne: {
-        filter: { section: setting.section },
+        filter: { setting: setting.setting },
         update: {
           $set: {
-            is_visible: setting.is_visible,
-            sort_order: setting.sort_order || 0,
+            value: setting.value,
+            description: setting.description || setting.setting,
+            is_active: setting.is_active !== false,
             updated_at: now
           }
         },
@@ -132,18 +133,18 @@ export async function PUT(request: NextRequest) {
 
     return NextResponse.json({ 
       success: true, 
-      message: 'Contact section settings updated successfully' 
+      message: 'Order settings updated successfully' 
     });
   } catch (error) {
-    console.error('Error updating contact section settings:', error);
+    console.error('Error updating order settings:', error);
     return NextResponse.json(
-      { error: 'Failed to update contact section settings' },
+      { error: 'Failed to update order settings' },
       { status: 500 }
     );
   }
 }
 
-// DELETE - Delete contact section setting
+// DELETE - Delete order setting
 export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -165,27 +166,26 @@ export async function DELETE(request: NextRequest) {
     }
 
     const db = await getDatabase();
-    const collection = db.collection<ContactSectionSettings>('contact_section_settings');
+    const collection = db.collection<OrderSettings>('order_settings');
 
     const result = await collection.deleteOne({ _id: new ObjectId(id) });
 
     if (result.deletedCount === 0) {
       return NextResponse.json(
-        { error: 'Contact section setting not found' },
+        { error: 'Order setting not found' },
         { status: 404 }
       );
     }
 
     return NextResponse.json({ 
       success: true, 
-      message: 'Contact section setting deleted successfully' 
+      message: 'Order setting deleted successfully' 
     });
   } catch (error) {
-    console.error('Error deleting contact section setting:', error);
+    console.error('Error deleting order setting:', error);
     return NextResponse.json(
-      { error: 'Failed to delete contact section setting' },
+      { error: 'Failed to delete order setting' },
       { status: 500 }
     );
   }
 }
-

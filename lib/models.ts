@@ -210,6 +210,64 @@ export interface ContactSectionSettings {
   updated_at: Date;
 }
 
+export interface OrderItem {
+  _id?: string;
+  id?: number;
+  menuItemId: string; // Reference to menu item
+  name: string;
+  description: string;
+  price: number;
+  quantity: number;
+  specialInstructions?: string;
+  category: string;
+  image: string;
+  isVegan?: boolean;
+  isGlutenFree?: boolean;
+  calories?: number;
+  prepTime?: number;
+}
+
+export interface Order {
+  _id?: string;
+  id?: number;
+  orderNumber: string; // Human-readable order number like #ORD-001
+  items: OrderItem[];
+  subtotal: number;
+  deliveryFee: number;
+  tax: number;
+  total: number;
+  status: 'pending' | 'confirmed' | 'preparing' | 'ready' | 'completed' | 'cancelled';
+  orderType: 'pickup' | 'delivery';
+  customerInfo: {
+    name: string;
+    email: string;
+    phone: string;
+    address?: string;
+  };
+  specialInstructions?: string;
+  orderTime: Date;
+  estimatedReadyTime?: Date;
+  actualReadyTime?: Date;
+  completedTime?: Date;
+  branchId?: string; // Which branch is handling the order
+  notes?: string; // Admin notes
+  paymentMethod?: 'cash' | 'card' | 'mobile';
+  paymentStatus?: 'pending' | 'paid' | 'refunded';
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface OrderSettings {
+  _id?: string;
+  id?: number;
+  setting: string; // 'delivery_fee', 'tax_rate', 'prep_time_pickup', 'prep_time_delivery', etc.
+  value: string | number;
+  description: string;
+  is_active: boolean;
+  created_at: Date;
+  updated_at: Date;
+}
+
 export interface User {
   _id?: string;
   username: string;

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { 
+import {
   Coffee, 
   Home, 
   Settings, 
@@ -16,7 +16,8 @@ import {
   ChevronDown,
   ChevronRight,
   FileText,
-  MapPin
+  MapPin,
+  ShoppingCart
 } from 'lucide-react';
 import HomeContentManager from '@/components/HomeContentManager';
 import DisplaySettingsManager from '@/components/DisplaySettingsManager';
@@ -27,6 +28,7 @@ import MenuManager from '@/components/MenuManager';
 import SignatureDrinksManager from '@/components/SignatureDrinksManager';
 import AboutManager from '@/components/AboutManager';
 import ContactManager from '@/components/ContactManager';
+import OrderManager from '@/components/OrderManager';
 
 interface User {
   id: number;
@@ -68,7 +70,7 @@ export default function Dashboard() {
     router.push('/');
   };
 
-  const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set(['home', 'menu', 'about', 'contact']));
+  const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set(['home', 'menu', 'about', 'contact', 'orders']));
 
   const mainMenus = [
     {
@@ -108,6 +110,14 @@ export default function Dashboard() {
         { id: 'contact-content', name: 'Contact Content', icon: MapPin },
       ]
     },
+    {
+      id: 'orders',
+      name: 'Order Management',
+      icon: ShoppingCart,
+      subMenus: [
+        { id: 'order-management', name: 'Order Management', icon: ShoppingCart },
+      ]
+    },
   ];
 
   const renderActiveTab = () => {
@@ -130,6 +140,8 @@ export default function Dashboard() {
         return <AboutManager />;
       case 'contact-content':
         return <ContactManager />;
+      case 'order-management':
+        return <OrderManager />;
       default:
         return <HomeContentManager />;
     }
