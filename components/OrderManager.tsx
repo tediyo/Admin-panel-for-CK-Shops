@@ -98,21 +98,49 @@ export default function OrderManager() {
 
   const handleStatusUpdate = async (orderId: string, status: Order['status'], notes?: string) => {
     try {
+      console.log('🔧 Updating order status:', { orderId, status, notes });
+      console.log('🔍 Order ID type:', typeof orderId, 'Value:', orderId);
+      
+      // Ensure orderId is a string (ObjectIds are serialized as strings in JSON)
+      const orderIdString = orderId.toString();
+      console.log('🔧 Using order ID string:', orderIdString);
+      
       // Update order status
       const response = await fetch('/api/orders', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ _id: orderId, status })
+        body: JSON.stringify({ _id: orderIdString, status })
       });
 
-      const result = await response.json();
+      let result;
+      try {
+        const responseText = await response.text();
+        console.log('📝 Raw response text:', responseText);
+        
+        if (responseText.trim() === '') {
+          throw new Error('Empty response from server');
+        }
+        
+        result = JSON.parse(responseText);
+        console.log('📝 Parsed API response:', result);
+      } catch (jsonError) {
+        console.error('❌ Failed to parse API response as JSON:', jsonError);
+        console.error('❌ Raw response status:', response.status);
+        throw new Error('Invalid response from server: ' + (jsonError instanceof Error ? jsonError.message : 'Unknown error'));
+      }
+      
+      if (!response.ok) {
+        console.error('❌ API error:', result);
+        throw new Error(result?.error || result?.details || 'Failed to update order');
+      }
+      
       if (result.success) {
         // Create tracking entry
         await fetch('/api/order-tracking', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
-            orderId, 
+            orderId: orderIdString, 
             status, 
             notes, 
             changedBy: 'admin' 
