@@ -1,11 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/mongodb';
-import { Order, OrderSettings } from '@/lib/models';
+import { Order, OrderSettings, OrderTracking } from '@/lib/models';
 import { ObjectId } from 'mongodb';
+import jwt from 'jsonwebtoken';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 // POST - Create new order from customer
 export async function POST(request: NextRequest) {
   try {
+    // Check authentication
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    const token = authHeader.substring(7);
+    let customerId;
+    
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET) as any;
+      customerId = decoded.customerId;
+    } catch (error) {
+      return NextResponse.json(
+        { error: 'Invalid or expired token' },
+        { status: 401 }
+      );
+    }
+
     const orderData = await request.json();
 
     if (!orderData.items || !Array.isArray(orderData.items) || orderData.items.length === 0) {
@@ -60,6 +85,7 @@ export async function POST(request: NextRequest) {
 
     const newOrder: Order = {
       orderNumber,
+      customerId,
       items: orderData.items,
       subtotal,
       deliveryFee: deliveryFeeAmount,
@@ -78,6 +104,18 @@ export async function POST(request: NextRequest) {
     };
 
     const result = await ordersCollection.insertOne(newOrder);
+    
+    // Create initial tracking entry
+    const trackingCollection = db.collection<OrderTracking>('order_tracking');
+    const initialTracking: OrderTracking = {
+      orderId: result.insertedId.toString(),
+      status: 'pending',
+      statusChangedAt: now,
+      changedBy: 'customer',
+      created_at: now,
+      updated_at: now
+    };
+    await trackingCollection.insertOne(initialTracking);
     
     return NextResponse.json({
       success: true,
@@ -101,6 +139,28 @@ export async function POST(request: NextRequest) {
 // GET - Get order by order number (for customer tracking)
 export async function GET(request: NextRequest) {
   try {
+    // Check authentication
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    const token = authHeader.substring(7);
+    let customerId;
+    
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET) as any;
+      customerId = decoded.customerId;
+    } catch (error) {
+      return NextResponse.json(
+        { error: 'Invalid or expired token' },
+        { status: 401 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const orderNumber = searchParams.get('orderNumber');
     const email = searchParams.get('email');
@@ -114,10 +174,11 @@ export async function GET(request: NextRequest) {
 
     const db = await getDatabase();
     const collection = db.collection<Order>('orders');
-
-    const order = await collection.findOne({
-      orderNumber,
-      'customerInfo.email': email
+    
+    const order = await collection.findOne({ 
+      orderNumber, 
+      'customerInfo.email': email,
+      customerId: customerId // Ensure customer can only access their own orders
     });
 
     if (!order) {
@@ -139,3 +200,4 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
