@@ -29,19 +29,21 @@ import {
 
 const statusColors = {
   pending: 'bg-yellow-100 text-yellow-800',
-  confirmed: 'bg-blue-100 text-blue-800',
+  accepted: 'bg-green-100 text-green-800',
+  rejected: 'bg-red-100 text-red-800',
   preparing: 'bg-orange-100 text-orange-800',
-  ready: 'bg-green-100 text-green-800',
-  completed: 'bg-gray-100 text-gray-800',
+  ready: 'bg-blue-100 text-blue-800',
+  delivered: 'bg-gray-100 text-gray-800',
   cancelled: 'bg-red-100 text-red-800'
 };
 
 const statusIcons = {
   pending: Clock,
-  confirmed: CheckCircle,
+  accepted: CheckCircle,
+  rejected: XCircle,
   preparing: Coffee,
   ready: AlertCircle,
-  completed: CheckCircle,
+  delivered: CheckCircle,
   cancelled: XCircle
 };
 
@@ -94,16 +96,57 @@ export default function OrderManager() {
     }
   };
 
-  const handleStatusUpdate = async (orderId: string, status: Order['status']) => {
+  const handleStatusUpdate = async (orderId: string, status: Order['status'], notes?: string) => {
     try {
+      console.log('🔧 Updating order status:', { orderId, status, notes });
+      console.log('🔍 Order ID type:', typeof orderId, 'Value:', orderId);
+      
+      // Ensure orderId is a string (ObjectIds are serialized as strings in JSON)
+      const orderIdString = orderId.toString();
+      console.log('🔧 Using order ID string:', orderIdString);
+      
+      // Update order status
       const response = await fetch('/api/orders', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ _id: orderId, status })
+        body: JSON.stringify({ _id: orderIdString, status })
       });
 
-      const result = await response.json();
+      let result;
+      try {
+        const responseText = await response.text();
+        console.log('📝 Raw response text:', responseText);
+        
+        if (responseText.trim() === '') {
+          throw new Error('Empty response from server');
+        }
+        
+        result = JSON.parse(responseText);
+        console.log('📝 Parsed API response:', result);
+      } catch (jsonError) {
+        console.error('❌ Failed to parse API response as JSON:', jsonError);
+        console.error('❌ Raw response status:', response.status);
+        throw new Error('Invalid response from server: ' + (jsonError instanceof Error ? jsonError.message : 'Unknown error'));
+      }
+      
+      if (!response.ok) {
+        console.error('❌ API error:', result);
+        throw new Error(result?.error || result?.details || 'Failed to update order');
+      }
+      
       if (result.success) {
+        // Create tracking entry
+        await fetch('/api/order-tracking', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            orderId: orderIdString, 
+            status, 
+            notes, 
+            changedBy: 'admin' 
+          })
+        });
+
         await fetchData();
         setShowOrderModal(false);
       } else {
@@ -225,10 +268,11 @@ export default function OrderManager() {
             >
               <option value="">All Statuses</option>
               <option value="pending">Pending</option>
-              <option value="confirmed">Confirmed</option>
+              <option value="accepted">Accepted</option>
+              <option value="rejected">Rejected</option>
               <option value="preparing">Preparing</option>
               <option value="ready">Ready</option>
-              <option value="completed">Completed</option>
+              <option value="delivered">Delivered</option>
               <option value="cancelled">Cancelled</option>
             </select>
           </div>
@@ -319,14 +363,22 @@ export default function OrderManager() {
                 </div>
                 <div className="flex space-x-2">
                   {order.status === 'pending' && (
-                    <button
-                      onClick={() => handleStatusUpdate(order._id!, 'confirmed')}
-                      className="px-3 py-1 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700"
-                    >
-                      Confirm
-                    </button>
+                    <>
+                      <button
+                        onClick={() => handleStatusUpdate(order._id!, 'accepted')}
+                        className="px-3 py-1 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700"
+                      >
+                        Accept
+                      </button>
+                      <button
+                        onClick={() => handleStatusUpdate(order._id!, 'rejected')}
+                        className="px-3 py-1 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700"
+                      >
+                        Reject
+                      </button>
+                    </>
                   )}
-                  {order.status === 'confirmed' && (
+                  {order.status === 'accepted' && (
                     <button
                       onClick={() => handleStatusUpdate(order._id!, 'preparing')}
                       className="px-3 py-1 bg-orange-600 text-white rounded-lg text-sm hover:bg-orange-700"
@@ -337,20 +389,20 @@ export default function OrderManager() {
                   {order.status === 'preparing' && (
                     <button
                       onClick={() => handleStatusUpdate(order._id!, 'ready')}
-                      className="px-3 py-1 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700"
+                      className="px-3 py-1 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700"
                     >
                       Mark Ready
                     </button>
                   )}
                   {order.status === 'ready' && (
                     <button
-                      onClick={() => handleStatusUpdate(order._id!, 'completed')}
+                      onClick={() => handleStatusUpdate(order._id!, 'delivered')}
                       className="px-3 py-1 bg-gray-600 text-white rounded-lg text-sm hover:bg-gray-700"
                     >
-                      Complete
+                      Mark Delivered
                     </button>
                   )}
-                  {order.status !== 'completed' && order.status !== 'cancelled' && (
+                  {order.status !== 'delivered' && order.status !== 'cancelled' && order.status !== 'rejected' && (
                     <button
                       onClick={() => handleCancelOrder(order._id!)}
                       className="px-3 py-1 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700"
@@ -609,14 +661,22 @@ export default function OrderManager() {
                 Close
               </button>
               {selectedOrder.status === 'pending' && (
-                <button
-                  onClick={() => handleStatusUpdate(selectedOrder._id!, 'confirmed')}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                >
-                  Confirm Order
-                </button>
+                <>
+                  <button
+                    onClick={() => handleStatusUpdate(selectedOrder._id!, 'accepted')}
+                    className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                  >
+                    Accept Order
+                  </button>
+                  <button
+                    onClick={() => handleStatusUpdate(selectedOrder._id!, 'rejected')}
+                    className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                  >
+                    Reject Order
+                  </button>
+                </>
               )}
-              {selectedOrder.status === 'confirmed' && (
+              {selectedOrder.status === 'accepted' && (
                 <button
                   onClick={() => handleStatusUpdate(selectedOrder._id!, 'preparing')}
                   className="px-6 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700"
@@ -627,20 +687,20 @@ export default function OrderManager() {
               {selectedOrder.status === 'preparing' && (
                 <button
                   onClick={() => handleStatusUpdate(selectedOrder._id!, 'ready')}
-                  className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                 >
                   Mark as Ready
                 </button>
               )}
               {selectedOrder.status === 'ready' && (
                 <button
-                  onClick={() => handleStatusUpdate(selectedOrder._id!, 'completed')}
+                  onClick={() => handleStatusUpdate(selectedOrder._id!, 'delivered')}
                   className="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
                 >
-                  Complete Order
+                  Mark as Delivered
                 </button>
               )}
-              {selectedOrder.status !== 'completed' && selectedOrder.status !== 'cancelled' && (
+              {selectedOrder.status !== 'delivered' && selectedOrder.status !== 'cancelled' && selectedOrder.status !== 'rejected' && (
                 <button
                   onClick={() => handleCancelOrder(selectedOrder._id!)}
                   className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
@@ -798,3 +858,4 @@ export default function OrderManager() {
     </div>
   );
 }
+

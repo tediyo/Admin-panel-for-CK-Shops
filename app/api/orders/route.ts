@@ -128,7 +128,20 @@ export async function POST(request: NextRequest) {
 // PUT - Update order status or details
 export async function PUT(request: NextRequest) {
   try {
-    const updateData = await request.json();
+    console.log('🔧 Order update attempt started');
+    console.log('📝 Request headers:', Object.fromEntries(request.headers.entries()));
+    
+    let updateData;
+    try {
+      updateData = await request.json();
+      console.log('📝 Update data:', updateData);
+    } catch (jsonError) {
+      console.error('❌ JSON parsing error:', jsonError);
+      return NextResponse.json(
+        { error: 'Invalid JSON in request body', details: jsonError instanceof Error ? jsonError.message : 'Unknown JSON error' },
+        { status: 400 }
+      );
+    }
 
     if (!updateData._id) {
       return NextResponse.json(
@@ -138,50 +151,42 @@ export async function PUT(request: NextRequest) {
     }
 
     // Validate ObjectId format
+    console.log('🔍 Validating order ID:', updateData._id, 'Type:', typeof updateData._id);
     if (!ObjectId.isValid(updateData._id)) {
+      console.error('❌ Invalid ObjectId format:', updateData._id);
       return NextResponse.json(
-        { error: 'Invalid order ID format' },
+        { error: 'Invalid order ID format', receivedId: updateData._id },
         { status: 400 }
       );
     }
 
+    console.log('🔌 Connecting to MongoDB...');
     const db = await getDatabase();
+    console.log('✅ MongoDB connected successfully');
     const collection = db.collection<Order>('orders');
+    console.log('📊 Using orders collection');
 
     const now = new Date();
     
-    // If updating status, add timestamps
-    if (updateData.status) {
-      const statusUpdates: any = { status: updateData.status, updated_at: now };
-      
-      switch (updateData.status) {
-        case 'confirmed':
-          // No additional timestamp needed
-          break;
-        case 'preparing':
-          statusUpdates.actualReadyTime = new Date(now.getTime() + 20 * 60000); // 20 minutes from now
-          break;
-        case 'ready':
-          statusUpdates.actualReadyTime = now;
-          break;
-        case 'completed':
-          statusUpdates.completedTime = now;
-          break;
-      }
-      
-      updateData.actualReadyTime = statusUpdates.actualReadyTime;
-      updateData.completedTime = statusUpdates.completedTime;
-    }
+    // Simplified status update - just update the status and timestamp
+    console.log('📝 Updating order with data:', updateData);
 
+    console.log('💾 Updating order in database...');
+    
+    // Create update object with only allowed fields
+    const updateFields: any = { updated_at: now };
+    if (updateData.status) updateFields.status = updateData.status;
+    if (updateData.notes) updateFields.notes = updateData.notes;
+    if (updateData.paymentMethod) updateFields.paymentMethod = updateData.paymentMethod;
+    if (updateData.paymentStatus) updateFields.paymentStatus = updateData.paymentStatus;
+    
+    console.log('📝 Update fields:', updateFields);
+    
     const result = await collection.updateOne(
       { _id: new ObjectId(updateData._id) },
-      {
-        $set: {
-          ...updateData,
-          updated_at: now
-        }
-      }
+      { $set: updateFields }
     );
+    console.log('✅ Order update result:', { matchedCount: result.matchedCount, modifiedCount: result.modifiedCount });
 
     if (result.matchedCount === 0) {
       return NextResponse.json(
@@ -195,9 +200,22 @@ export async function PUT(request: NextRequest) {
       message: 'Order updated successfully' 
     });
   } catch (error) {
-    console.error('Error updating order:', error);
+    console.error('❌ Error updating order:', error);
+    console.error('Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : 'Unknown',
+      cause: error instanceof Error ? error.cause : undefined
+    });
+    
+    // Return a proper error response instead of empty object
     return NextResponse.json(
-      { error: 'Failed to update order' },
+      { 
+        success: false,
+        error: 'Failed to update order', 
+        details: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString()
+      },
       { status: 500 }
     );
   }
@@ -256,3 +274,4 @@ export async function DELETE(request: NextRequest) {
     );
   }
 }
+

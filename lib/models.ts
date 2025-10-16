@@ -231,12 +231,13 @@ export interface Order {
   _id?: string;
   id?: number;
   orderNumber: string; // Human-readable order number like #ORD-001
+  customerId?: string; // Reference to customer
   items: OrderItem[];
   subtotal: number;
   deliveryFee: number;
   tax: number;
   total: number;
-  status: 'pending' | 'confirmed' | 'preparing' | 'ready' | 'completed' | 'cancelled';
+  status: 'pending' | 'accepted' | 'rejected' | 'preparing' | 'ready' | 'delivered' | 'cancelled';
   orderType: 'pickup' | 'delivery';
   customerInfo: {
     name: string;
@@ -253,6 +254,7 @@ export interface Order {
   notes?: string; // Admin notes
   paymentMethod?: 'cash' | 'card' | 'mobile';
   paymentStatus?: 'pending' | 'paid' | 'refunded';
+  tracking?: OrderTracking[]; // Order tracking history
   created_at: Date;
   updated_at: Date;
 }
@@ -274,6 +276,32 @@ export interface User {
   email: string;
   password: string;
   role: string;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface Customer {
+  _id?: string;
+  id?: number;
+  name: string;
+  email: string;
+  phone: string;
+  password: string; // Hashed password
+  address?: string;
+  is_active: boolean;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface OrderTracking {
+  _id?: string;
+  id?: number;
+  orderId: string; // Reference to order
+  status: 'pending' | 'accepted' | 'rejected' | 'preparing' | 'ready' | 'delivered' | 'cancelled';
+  adminNotes?: string;
+  customerNotes?: string;
+  statusChangedAt: Date;
+  changedBy: 'admin' | 'customer';
   created_at: Date;
   updated_at: Date;
 }
