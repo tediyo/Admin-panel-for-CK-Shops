@@ -10,7 +10,9 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 // POST - Register new customer
 export async function POST(request: NextRequest) {
   try {
+    console.log('🔧 Customer registration attempt started');
     const { name, email, phone, password, address } = await request.json();
+    console.log('📝 Registration data:', { name, email, phone, address: address ? 'provided' : 'not provided' });
 
     if (!name || !email || !phone || !password) {
       return NextResponse.json(
@@ -19,8 +21,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    console.log('🔌 Connecting to MongoDB...');
     const db = await getDatabase();
+    console.log('✅ MongoDB connected successfully');
     const collection = db.collection<Customer>('customers');
+    console.log('📊 Using customers collection');
 
     // Check if customer already exists
     const existingCustomer = await collection.findOne({ email });
@@ -46,7 +51,9 @@ export async function POST(request: NextRequest) {
       updated_at: now
     };
 
+    console.log('💾 Inserting customer into database...');
     const result = await collection.insertOne(newCustomer);
+    console.log('✅ Customer inserted successfully with ID:', result.insertedId);
     
     // Generate JWT token
     const token = jwt.sign(
@@ -75,9 +82,13 @@ export async function POST(request: NextRequest) {
       }
     });
   } catch (error) {
-    console.error('Error registering customer:', error);
+    console.error('❌ Error registering customer:', error);
+    console.error('Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    });
     return NextResponse.json(
-      { error: 'Failed to register customer' },
+      { error: 'Failed to register customer', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }
