@@ -56,6 +56,7 @@ export default function OrderManager() {
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [editingSetting, setEditingSetting] = useState<OrderSettings | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   // Filters and search
   const [filters, setFilters] = useState({
@@ -73,6 +74,15 @@ export default function OrderManager() {
     fetchData();
   }, [filters, pagination.currentPage]);
 
+  // Auto-refresh every 30 seconds to show real-time updates
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchData();
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -89,6 +99,7 @@ export default function OrderManager() {
       setOrders(ordersData.data?.orders || []);
       setPagination(ordersData.data?.pagination || pagination);
       setSettings(settingsData.data || []);
+      setLastUpdated(new Date());
     } catch (error) {
       console.error('Error fetching order data:', error);
     } finally {
@@ -237,7 +248,14 @@ export default function OrderManager() {
   const renderOrders = () => (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h3 className="text-xl font-semibold">Orders ({pagination.totalCount})</h3>
+        <div>
+          <h3 className="text-xl font-semibold">Orders ({pagination.totalCount})</h3>
+          {lastUpdated && (
+            <p className="text-sm text-gray-500 mt-1">
+              Last updated: {lastUpdated.toLocaleTimeString()}
+            </p>
+          )}
+        </div>
         <div className="flex space-x-2">
           <button
             onClick={initOrderSystem}
@@ -248,10 +266,11 @@ export default function OrderManager() {
           </button>
           <button
             onClick={fetchData}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center space-x-2"
+            disabled={loading}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <RefreshCw className="h-4 w-4" />
-            <span>Refresh</span>
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            <span>{loading ? 'Refreshing...' : 'Refresh'}</span>
           </button>
         </div>
       </div>
